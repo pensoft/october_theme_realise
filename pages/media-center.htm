@@ -1,0 +1,272 @@
+url = "/media-center"
+layout = "default"
+title = "Media centre"
+is_hidden = 0
+robot_index = "index"
+robot_follow = "follow"
+==
+<?php
+use Pensoft\Media\Models\MediaLogos;
+use Pensoft\Media\Models\Flyers;
+use Pensoft\Media\Models\Newsletters;
+use Pensoft\Media\Models\Pressreleases;
+
+function onStart()
+{
+    $this['logos'] = MediaLogos::orderBy('sort_order')->get();
+    $this['flyers'] = Flyers::orderBy('sort_order')->get();
+    // Newsletters / Press Releases can be switched off in meta/realise-data.php (media_sections).
+    $data = include themes_path(\Cms\Classes\Theme::getActiveThemeCode() . '/meta/realise-data.php');
+    $this['show'] = $data['media_sections'];
+    $this['newsletters'] = $this['show']['newsletters'] ? Newsletters::orderBy('date', 'desc')->get() : collect();
+    $this['pressreleases'] = $this['show']['press'] ? Pressreleases::orderBy('date', 'desc')->get() : collect();
+}
+?>
+==
+{#
+    Media Centre: Brand Kit (Pensoft.Media logos + flyers), Newsletters and
+    Press Releases, with a sticky tab bar that tracks the section in view.
+
+    Until logos are uploaded in the backend, the Brand Kit shows the design's
+    colour variants of the bundled REALISE logo (each downloads the master
+    PNG); print materials show their mock-ups marked "Coming soon".
+#}
+{% set rl_logo = 'assets/realise/img/realise-logo.png'|theme %}
+
+{% partial 'realise/page-hero' crumb='Resources' title='Media Centre' %}
+
+{% if show.newsletters or show.press %}
+<nav class="rl-band rl-tabs-band" aria-label="Media Centre sections">
+    <div class="rl-wrap rl-tabs">
+        <a class="rl-tab is-active" href="#media-brand" data-rl-spy>Brand Kit</a>
+        {% if show.newsletters %}<a class="rl-tab" href="#media-news" data-rl-spy>Newsletters</a>{% endif %}
+        {% if show.press %}<a class="rl-tab" href="#media-press" data-rl-spy>Press Releases</a>{% endif %}
+    </div>
+</nav>
+{% endif %}
+
+{# ------------------------------------------------------------ BRAND KIT #}
+<section id="media-brand" aria-labelledby="media-brand-heading">
+    <div class="rl-band">
+        <div class="rl-wrap rl-head rl-head--plain">
+            <div class="rl-head__text">
+                <h2 class="rl-h2 rl-h2--sm" id="media-brand-heading">Brand Kit</h2>
+                <p class="rl-copy">Logos and brand materials for partners, media and event organisers. Please follow the Brand Manual when using REALISE assets.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="rl-band">
+        <div class="rl-wrap rl-subhead"><h3>Logos</h3></div>
+        <div class="rl-wrap rl-wrap--open-right rl-cards3" style="--rl-logo-mask:url('{{ rl_logo }}')">
+            {% if logos|length %}
+                {#
+                    Pensoft.Media logos. The Logo image is the card preview
+                    (it carries its own background); the first available
+                    file is the main Download button, other formats are
+                    listed after it.
+                #}
+                {% for l in logos %}
+                {% set files = [['PNG', l.file_png], ['JPG', l.file_jpg], ['SVG/EPS', l.file_eps], ['PDF', l.file_pdf], ['ZIP', l.file_zip]]|filter(f => f[1]) %}
+                <article class="rl-kit">
+                    <div class="rl-kit__preview rl-kit__preview--cover rl-kit__preview--outline">
+                        {% if l.logo_image %}<img src="{{ l.logo_image.getThumb(640, 400, { mode: 'crop' }) }}" alt="">{% endif %}
+                    </div>
+                    <div class="rl-kit__body">
+                        <div><h4>{{ l.name }}</h4></div>
+                        {% if files|length %}
+                        {# One primary button per format, side by side, labelled with the file type. #}
+                        <div class="rl-kit__btns">
+                            {% for f in files %}
+                            {% partial 'realise/kit-file-btn' file=f[1] name=l.name single=(files|length == 1) %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+                {% set variants = [
+                    { name: 'Primary logo', bg: '#04044D', kind: 'img' },
+                    { name: 'Primary logo, blue text', bg: '#FFFFFF', kind: 'split' },
+                    { name: 'Dark blue logo', bg: '#DAE7FF', kind: 'mask', fg: '#04044D' },
+                    { name: 'Light blue logo', bg: '#121289', kind: 'mask', fg: '#6098FF' },
+                    { name: 'White logo', bg: '#6098FF', kind: 'mask', fg: '#FFFFFF' },
+                    { name: 'Black logo', bg: '#FFFFFF', kind: 'mask', fg: '#000000' },
+                    { name: 'Logo symbol', bg: '#FFFFFF', kind: 'symbol' }
+                ] %}
+                {% for v in variants %}
+                <article class="rl-kit">
+                    <div class="rl-kit__preview {{ v.kind == 'img' ? 'rl-kit__preview--outline' }}" style="background:{{ v.bg }}">
+                        {% if v.kind == 'img' %}
+                        <img src="{{ rl_logo }}" alt="">
+                        {% elseif v.kind == 'mask' %}
+                        <div class="rl-kit__mask" style="background:{{ v.fg }}"></div>
+                        {% elseif v.kind == 'split' %}
+                        <div style="width:72%;aspect-ratio:1524/356;position:relative">
+                            <img src="{{ rl_logo }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;clip-path:inset(0 79.6% 0 0)">
+                            <div class="rl-kit__mask" style="position:absolute;inset:0;width:100%;background:#04044D;clip-path:inset(0 0 0 20.4%)"></div>
+                        </div>
+                        {% else %}
+                        <div class="rl-kit__symbol"><img src="{{ rl_logo }}" alt=""></div>
+                        {% endif %}
+                    </div>
+                    <div class="rl-kit__body">
+                        <div><h4>{{ v.name }}</h4></div>
+                        <div class="rl-kit__btns">
+                            <a class="rl-btn rl-btn--sm rl-btn--block" href="{{ rl_logo }}" download="REALISE-logo.png">
+                                <span class="sr-only">Download {{ v.name }}, </span>{% partial 'realise/roll' text='PNG' %}
+                                <span class="rl-btn__sq">{% partial 'realise/icon' name='download' %}</span>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="rl-band">
+        <div class="rl-wrap rl-subhead"><h3>Print &amp; brand materials</h3></div>
+        <div class="rl-wrap rl-wrap--open-right rl-cards3">
+            {% if flyers|length %}
+                {% for f in flyers %}
+                {% set ffile = f.file ?: f.file_print %}
+                <article class="rl-kit">
+                    <div class="rl-kit__preview rl-kit__preview--cover" style="background:#121289">
+                        {% if f.flyer_image %}<img src="{{ f.flyer_image.getThumb(640, 400, { mode: 'crop' }) }}" alt="">{% endif %}
+                    </div>
+                    <div class="rl-kit__body">
+                        <div><h4>{{ f.name }}</h4>{% if f.file %}<span class="rl-kit__meta">{{ f.file.extension|upper }} · {{ f.file.file_size >= 1048576 ? (f.file.file_size / 1048576)|round(1) ~ ' MB' : max(1, (f.file.file_size / 1024)|round) ~ ' KB' }}</span>{% endif %}</div>
+                        {% if ffile %}
+                        {# The file, plus the print-ready version when there is one. #}
+                        <div class="rl-kit__btns">
+                            {% if f.file %}{% partial 'realise/kit-file-btn' file=f.file name=f.name single=(not f.file_print) %}{% endif %}
+                            {% if f.file_print %}{% partial 'realise/kit-file-btn' file=f.file_print name=f.name ~ ', print version' label=('Print ' ~ f.file_print.getExtension()|upper) single=(not f.file) %}{% endif %}
+                        </div>
+                        {% elseif f.url %}
+                        <a class="rl-btn rl-btn--sm rl-btn--block" href="{{ f.url }}" target="_blank" rel="noopener noreferrer">
+                            {% partial 'realise/roll' text='Open' %}<span class="sr-only"> {{ f.name }} (opens in a new tab)</span>
+                            <span class="rl-btn__sq">{% partial 'realise/icon' name='external' %}</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+                {% for m in [{ name: 'Roll-up banner', meta: 'PDF · 85 × 200 cm', kind: 'rollup' }, { name: 'Sticker', meta: 'PDF', kind: 'sticker' }, { name: 'Brand Manual', meta: 'PDF', kind: 'manual' }] %}
+                <article class="rl-kit">
+                    <div class="rl-kit__preview" style="background:{{ m.kind == 'manual' ? '#DAE7FF' : '#121289' }}">
+                        {% if m.kind == 'rollup' %}
+                        <div class="rl-mock-rollup"><div><img src="{{ rl_logo }}" alt=""><s></s><s></s><u></u></div><i></i></div>
+                        {% elseif m.kind == 'sticker' %}
+                        <div class="rl-mock-sticker"><div class="rl-kit__symbol"><img src="{{ rl_logo }}" alt=""></div></div>
+                        {% else %}
+                        <div class="rl-mock-manual"><img src="{{ rl_logo }}" alt=""><span>Brand<br>Manual</span></div>
+                        {% endif %}
+                    </div>
+                    <div class="rl-kit__body">
+                        <div><h4>{{ m.name }}</h4><span class="rl-kit__meta">{{ m.meta }}</span></div>
+                        <span class="rl-btn rl-btn--sm rl-btn--block" aria-disabled="true">
+                            Coming soon
+                            <span class="rl-btn__sq">{% partial 'realise/icon' name='download' %}</span>
+                        </span>
+                    </div>
+                </article>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{# ---------------------------------------------------------- NEWSLETTERS #}
+{% if show.newsletters %}
+<section id="media-news" aria-labelledby="media-news-heading">
+    <div class="rl-band">
+        <div class="rl-wrap rl-head rl-head--plain">
+            <div class="rl-head__text">
+                <h2 class="rl-h2 rl-h2--sm" id="media-news-heading">Newsletters</h2>
+                <p class="rl-copy">Regular updates on REALISE research, events and results. Subscribe to receive new issues by email.</p>
+            </div>
+            <a class="rl-btn rl-btn--sm" {% partial 'realise/subscribe-link' %}>
+                {% partial 'realise/roll' text='Subscribe' %}{% partial 'realise/subscribe-link' hint=true %}
+                <span class="rl-btn__sq">{% partial 'realise/icon' name='arrow-right' %}</span>
+            </a>
+        </div>
+    </div>
+    <div class="rl-band">
+        {% if newsletters|length %}
+        <div class="rl-wrap rl-wrap--open-right rl-cards3">
+            {% for nl in newsletters %}
+            <article class="rl-nl">
+                <div class="rl-nl__cover">
+                    {% if nl.newsletter_image %}
+                    <img src="{{ nl.newsletter_image.getThumb(420, null, { mode: 'auto' }) }}" alt="">
+                    {% else %}
+                    <div class="rl-nl__paper" aria-hidden="true">
+                        <div class="rl-nl__paper-head"><img src="{{ rl_logo }}" alt=""><div><span>Newsletter</span><span>{{ nl.date ? nl.date|date('M Y') }}</span></div></div>
+                        <div class="rl-nl__paper-body"><b>{{ nl.name }}</b><i></i><s></s><s></s><s></s></div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if nl.date %}<time class="rl-date" datetime="{{ nl.date|date('Y-m-d') }}">{{ nl.date|date('F Y') }}</time>{% endif %}
+                <h3>{{ nl.name }}</h3>
+                {% if nl.file or nl.url %}
+                <a class="rl-btn rl-btn--sm" {% if nl.file %}{% partial 'realise/file-link' file=nl.file %}{% else %}href="{{ nl.url }}" target="_blank" rel="noopener noreferrer"{% endif %}>
+                    {% partial 'realise/roll' text='Read the newsletter' %}<span class="sr-only">: {{ nl.name }}{{ not nl.file or nl.file.getExtension()|lower in ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'] ? ' (opens in a new tab)' }}</span>
+                    <span class="rl-btn__sq">{% partial 'realise/icon' name='arrow-right' %}</span>
+                </a>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="rl-wrap"><p class="rl-empty">The first newsletter issue is on its way - subscribe to get it in your inbox.</p></div>
+        {% endif %}
+    </div>
+</section>
+
+{% endif %}
+
+{# ------------------------------------------------------- PRESS RELEASES #}
+{% if show.press %}
+<section id="media-press" aria-labelledby="media-press-heading">
+    <div class="rl-band">
+        <div class="rl-wrap rl-head rl-head--plain">
+            <div class="rl-head__text">
+                <h2 class="rl-h2 rl-h2--sm" id="media-press-heading">Press Releases</h2>
+                <p class="rl-copy">Official announcements from the REALISE consortium, distributed via AlphaGalileo and EurekAlert!.</p>
+            </div>
+        </div>
+    </div>
+    <div class="rl-band">
+        {% if pressreleases|length %}
+        <div class="rl-wrap rl-wrap--open-right rl-cards3">
+            {% for pr in pressreleases %}
+            <article class="rl-press">
+                <div class="rl-press__meta">
+                    <span class="rl-pill">{{ pr.category and pr.category.title ? pr.category.title : 'Press release' }}</span>
+                    {% if pr.date %}<time class="rl-date" datetime="{{ pr.date|date('Y-m-d') }}">{{ pr.date|date('d.m.y') }}</time>{% endif %}
+                </div>
+                <h3>{{ pr.name }}</h3>
+                {% set desc = pr.description|striptags|trim %}
+                {% if desc %}<div class="rl-press__desc">{{ desc|length > 200 ? desc|slice(0, 200) ~ '...' : desc }}</div>{% endif %}
+                {# `link` is the backend "Links" repeater: [{text, url}, ...],
+                   e.g. AlphaGalileo and EurekAlert! #}
+                {% set links = pr.link is iterable ? pr.link|filter(l => l.url) : [] %}
+                {% if links|length %}
+                <div class="rl-press__links">
+                    {% for l in links %}
+                    <a class="rl-ghost" href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.text ?: 'Read the release' }}<span class="sr-only">: {{ pr.name }} (opens in a new tab)</span>{% partial 'realise/icon' name='external' size=12 %}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="rl-wrap"><p class="rl-empty">Press releases will be published here.</p></div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}

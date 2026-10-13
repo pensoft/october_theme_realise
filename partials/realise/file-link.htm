@@ -1,0 +1,11 @@
+{#
+    Link attributes for a file attachment: href to /download/<id>/<original
+    file name> (see components/download-url), and for PDFs and images a new tab - the
+    download page serves PDFs and images inline (a preview in the browser) and every other
+    type as an attachment (saved under its original name).
+
+    Usage: <a {% partial 'realise/file-link' file=record.file %} class="...">
+#}
+{%- if file -%}
+href="{{ partial('components/download-url', { file: file }) }}"{% if file.getExtension()|lower in ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'] or file.content_type == 'application/pdf' %} target="_blank" rel="noopener"{% endif %}
+{%- endif -%}

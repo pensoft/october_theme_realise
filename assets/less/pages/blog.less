@@ -1,0 +1,390 @@
+// ============================================================
+//  Blog page (listing + detail)
+//  Self-contained — does NOT depend on pages/news.less.
+//  All rules are scoped under the `.blog` layout-content class
+//  (set by the default layout from the page id).
+// ============================================================
+
+#layout-content.blog{
+    min-height: 800px;
+}
+
+.blog{
+
+    // ----------------------------------------------------------
+    //  Listing
+    // ----------------------------------------------------------
+    .blog-list{
+        width: 100%;
+
+        .row + .row{
+            margin-top: 1.1rem;
+        }
+    }
+
+    .blog-pagination{
+        margin-top: 20px;
+    }
+
+    // Card: rounded image with a dark overlay and a light info box
+    // anchored to the bottom-left, overhanging below the image.
+    .blog-card{
+        position: relative;
+        display: block;
+        margin-bottom: 60px;
+        padding-bottom: 70px; // room for the overhanging info box
+
+        .breakpoint-large-down({
+            margin-bottom: 28px;
+            padding-bottom: 0;
+        });
+    }
+
+    .blog-card__image{
+        position: relative;
+        display: block;
+        border-radius: 12px;
+        overflow: hidden;
+
+        img{
+            display: block; // remove inline baseline gap so the overlay matches the image height
+            width: 100%;
+            height: 374px;
+            object-fit: cover;
+            border-radius: 12px;
+            transform: scale(1);
+            transition: transform 0.4s ease-in-out;
+
+            .breakpoint-large-down({
+                height: 260px;
+            });
+        }
+
+        // Dark overlay (Figma node 672:1025 — rgba(0,0,0,0.2))
+        &::after{
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            transition: background 0.3s ease;
+        }
+
+        &:hover{
+            img{
+                transform: scale(1.05);
+            }
+            &::after{
+                background: rgba(0, 0, 0, 0.28);
+            }
+        }
+    }
+
+    .blog-card__body{
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 68%;
+        background: #F3F8FD;
+        border-top-right-radius: 12px;
+        // Figma node 672:1027 — flat box, only the top-right corner rounded.
+        // Internal padding measured from the design: ~25px top/bottom, ~22px sides.
+        padding: 25px 24px 26px 22px;
+
+        .breakpoint-large-down({
+            position: static;
+            width: 100%;
+            border-radius: 0 0 12px 12px;
+            padding: 20px 0 22px;
+        });
+    }
+
+    // Date — Figma node 672:1033 (15px / #8D97A5 / -0.45px)
+    .blog-card__date{
+        display: block;
+        color: @date-text-color;
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.2;
+        letter-spacing: -0.45px;
+        margin-bottom: 8px;
+    }
+
+    // Title — Figma node 672:1029 (22px / 500 / #283038 / 1.2 / -0.88px)
+    .blog-card__title{
+        margin: 0 0 24px;
+
+        a{
+            display: block;
+            color: @heading-text-color;
+            font-size: 22px;
+            font-weight: 500;
+            line-height: 1.2;
+            letter-spacing: -0.88px;
+
+            &:hover{
+                text-decoration: none;
+                color: @heading-text-color;
+                opacity: 0.85;
+            }
+        }
+    }
+
+    // "Read more" — Figma nodes 672:1037 / 672:1038 (16px / 500 / #0D4C8B / -0.48px)
+    .blog-read-more{
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: @link-color;
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: -0.48px;
+
+        svg{
+            width: 6px;
+            height: auto;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        &:hover{
+            text-decoration: none;
+            color: @link-color;
+
+            svg{
+                transform: translateX(4px);
+            }
+        }
+    }
+
+    // ----------------------------------------------------------
+    //  Detail — Figma node 680:341 (single centered column)
+    // ----------------------------------------------------------
+
+    // Light page tint behind the whole article (full-bleed).
+    .single-blog-page{
+        background: #F3F8FD;
+        padding: 40px 0 80px;
+    }
+
+    .single-blog{
+
+        // "Back to blog" — Figma nodes 682:366 / 682:367 / 682:370
+        .blog-back{
+            margin-bottom: 28px;
+
+            a{
+                display: inline-flex;
+                align-items: center;
+                gap: 12px;
+                color: #4A5565;
+                font-size: 14px;
+                line-height: 1.2;
+
+                &:hover{
+                    text-decoration: none;
+                    color: @heading-text-color;
+                }
+            }
+
+            &__icon{
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 26px;
+                height: 26px;
+                flex-shrink: 0;
+                background: #fff;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+
+                svg{
+                    width: 12px;
+                    height: 12px;
+                }
+            }
+        }
+
+        // Centered article column (~648px in the design)
+        &__article{
+            max-width: 648px;
+            margin: 0 auto;
+        }
+
+        // Cover image with dark overlay (Figma node 680:534)
+        &__media{
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 26px;
+
+            img{
+                display: block;
+                width: 100%;
+                height: 363px;
+                object-fit: cover;
+                border-radius: 12px;
+
+                .breakpoint-large-down({
+                    height: 240px;
+                });
+            }
+
+            &::after{
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: 12px;
+                background: rgba(0, 0, 0, 0.2);
+                pointer-events: none;
+            }
+        }
+
+        // Date — Figma node 680:557 (15px / #8D97A5 / -0.45px)
+        &__date{
+            display: block;
+            color: @date-text-color;
+            font-size: 15px;
+            font-weight: 400;
+            line-height: 1.2;
+            letter-spacing: -0.45px;
+            margin-bottom: 12px;
+        }
+
+        // Title — Figma node 680:555 (40px / 500 / #283038 / -1.6px)
+        &__title{
+            color: @heading-text-color;
+            font-size: 40px;
+            font-weight: 500;
+            line-height: 1.2;
+            letter-spacing: -1.6px;
+            margin: 0 0 26px;
+
+            .breakpoint-large-down({
+                font-size: 28px;
+                letter-spacing: -1px;
+            });
+        }
+
+        // Divider — Figma node 682:344 (Line 8)
+        &__divider{
+            border: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin: 0 0 24px;
+        }
+
+        // Bold section labels ("Summary", "Authors:") — #4E4E4E / 18px / bold
+        &__label{
+            display: block;
+            color: #4E4E4E;
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.54px;
+            margin-bottom: 14px;
+        }
+
+        // Summary — Figma node 682:342 (18px / 500 / #919191)
+        &__summary{
+            color: #919191;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.4;
+            letter-spacing: -0.54px;
+            margin-bottom: 30px;
+
+            p{
+                margin: 0 0 10px;
+            }
+        }
+
+        // Body — Figma node 680:556 (18px / 400 / #919191 / -0.54px)
+        &__content{
+            color: #919191;
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1.45;
+            letter-spacing: -0.54px;
+
+            p{
+                margin: 0 0 20px;
+            }
+
+            ul, ol{
+                padding-left: 20px;
+                margin: 20px 0;
+            }
+
+            img{
+                max-width: 100%;
+                height: auto;
+                border-radius: 12px;
+                margin: 10px 0;
+            }
+
+            a{
+                color: @link-color;
+            }
+        }
+
+        // Authors — Figma nodes 682:345 / 682:349 / 682:356
+        &__authors{
+            margin-top: 40px;
+
+            .author-item{
+                display: inline-flex;
+                flex-direction: column;
+                vertical-align: top;
+                gap: 8px;
+
+                & + .author-item{
+                    //margin-left: 24px;
+                     width: 100%;
+                }
+            }
+
+            .author{
+                color: @heading-text-color;
+                font-size: 18px;
+                font-weight: 500;
+                line-height: 1.4;
+                letter-spacing: -0.54px;
+            }
+
+            .author-email{
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                color: #637281;
+                font-size: 18px;
+                line-height: 1.4;
+                letter-spacing: -0.54px;
+
+                svg{
+                    width: 17px;
+                    height: auto;
+                    flex-shrink: 0;
+                }
+
+                &:hover{
+                    text-decoration: none;
+                    color: @link-color;
+                }
+            }
+        }
+
+        // Related "Other posts" below the article (full container width)
+        .related-posts{
+            margin: 64px 0 0;
+
+            h2{
+                color: @heading-text-color;
+                font-size: 28px;
+                font-weight: 500;
+                letter-spacing: -1px;
+                margin-bottom: 30px;
+            }
+        }
+    }
+}

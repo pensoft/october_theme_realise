@@ -1,0 +1,10 @@
+{#
+    Screen-reader warning for links that open in a new tab.
+
+    Usage: {% partial 'components/new-tab-hint' %}
+
+    Kept as a partial so the wording stays identical everywhere; the visible
+    "(opens in a new tab)" text is carried by the sr-only span rather than an
+    aria-label, so the link's visible words remain part of its accessible name.
+#}
+<span class="sr-only"> ({{'opens in a new tab'|_}})</span>

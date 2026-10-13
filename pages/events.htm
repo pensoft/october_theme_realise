@@ -1,0 +1,207 @@
+url = "/events/:slug?/:category?"
+layout = "default"
+title = "Events"
+is_hidden = 0
+robot_index = "index"
+robot_follow = "follow"
+==
+<?php
+use Pensoft\Calendar\Models\Entry;
+use Pensoft\Calendar\Models\Category;
+use Carbon\Carbon;
+
+// <title>: set before the layout's SEO component reads it - event name, or
+// "<category> - Events".
+function onInit()
+{
+    $slug = $this->param('slug');
+    if ($slug === 'category') {
+        $c = Category::get()->first(function ($c) { return \Str::slug($c->title) === $this->param('category'); });
+        if ($c) {
+            $this->page->title = $c->title . ' - Events';
+        }
+    } elseif ($slug) {
+        $entry = Entry::where('slug', $slug)->first();
+        if ($entry) {
+            $this->page->title = trim(strip_tags($entry->title));
+        }
+    }
+}
+
+function onStart()
+{
+    /*
+     * URLs:  /events                          all events
+     *        /events/category/<title slug>    one category (clean URL; Calendar
+     *                                          categories have no slug field, so
+     *                                          it is derived from the title)
+     *        /events/<event slug>             an event
+     * The old /events?category=<id> form redirects (301) to the clean URL.
+     */
+    $listUrl = $this->pageUrl('events', [], false);
+    $this['categories'] = Category::orderBy('title')->get();
+    $catSlug = function ($c) { return \Str::slug($c->title) ?: (string) $c->id; };
+    $this['category_slugs'] = $this['categories']->mapWithKeys(function ($c) use ($catSlug) {
+        return [$c->id => $catSlug($c)];
+    })->all();
+
+    if (input('category') !== null) {
+        $c = is_numeric(input('category')) ? $this['categories']->firstWhere('id', (int) input('category')) : null;
+        $to = $c ? $listUrl . '/category/' . $catSlug($c) : $listUrl;
+        $query = array_filter(['page' => input('page'), 'past' => input('past')]);
+        return Redirect::to($to . ($query ? '?' . http_build_query($query) : ''), 301);
+    }
+
+    $cid = null;
+    if ($this->param('slug') === 'category') {
+        $c = $this['categories']->first(function ($c) use ($catSlug) { return $catSlug($c) === $this->param('category'); });
+        if (!$c) {
+            return Redirect::to($listUrl, 301);
+        }
+        $cid = $c->id;
+        $this['slug'] = null;
+    } elseif ($this->param('category')) {
+        abort(404);
+    } else {
+        $this['slug'] = $this->param('slug');
+    }
+    $this['page_url'] = $this->pageUrl('');
+
+    if ($this['slug']) {
+        $entry = Entry::where('slug', $this['slug'])->first();
+        $this['entry'] = $entry;
+
+        if ($entry && class_exists('\BennoThommo\Meta\Meta')) {
+            $desc = str_limit(Html::strip($entry->description), 255);
+            \BennoThommo\Meta\Meta::set('twitter:card', 'summary_large_image');
+            \BennoThommo\Meta\Meta::set('twitter:title', $entry->title);
+            \BennoThommo\Meta\Meta::set('twitter:description', $desc);
+            \BennoThommo\Meta\Meta::set('og:title', $entry->title);
+            \BennoThommo\Meta\Meta::set('og:description', $desc);
+            \BennoThommo\Meta\Meta::set('og:type', 'article');
+            \BennoThommo\Meta\Meta::set('og:url', $this->pageUrl(''));
+            if ($entry->cover_image) {
+                \BennoThommo\Meta\Meta::set('twitter:image', $entry->cover_image->getThumb(600, null, ['mode' => 'auto']));
+                \BennoThommo\Meta\Meta::set('og:image', $entry->cover_image->getThumb(600, 314, ['mode' => 'crop']));
+                \BennoThommo\Meta\Meta::set('og:image:width', 600);
+                \BennoThommo\Meta\Meta::set('og:image:height', 314);
+            }
+        }
+        return;
+    }
+
+    // Category filter over Pensoft.Calendar categories (resolved above).
+    $this['categoryId'] = $cid;
+
+    $scope = function ($q) use ($cid) {
+        if ($cid) {
+            $q->whereHas('categories', function ($c) use ($cid) {
+                $c->whereKey($cid); // qualified: the pivot table has an id column too
+            });
+        }
+        return $q;
+    };
+
+    // 12 per page; upcoming and past page independently (?page= / ?past=),
+    // and each pager keeps the category filter and the other list's page.
+    $perPage = 12;
+    $upcoming = $scope(Entry::with('categories')->where('end', '>=', Carbon::now()))->orderBy('start', 'asc')
+        ->paginate($perPage, ['*'], 'page');
+    $past = $scope(Entry::with('categories')->where('end', '<', Carbon::now()))->orderBy('start', 'desc')
+        ->paginate($perPage, ['*'], 'past');
+    // Pager links stay on the clean URL (/events/category/<slug>?page=2).
+    $path = $cid ? $listUrl . '/category/' . $this['category_slugs'][$cid] : $listUrl;
+    $upcoming->withPath($path)->appends(array_filter(['past' => input('past')]));
+    $past->withPath($path)->appends(array_filter(['page' => input('page')]));
+    $this['entries'] = $upcoming;
+    $this['past_entries'] = $past;
+}
+?>
+==
+{% if not slug %}
+
+{% partial 'realise/page-hero' parent={ title: 'News & Events', url: 'news'|page({}, false) } crumb='Events' title='Events' %}
+
+{% if categories|length %}
+<section class="rl-band" aria-label="Filter events">
+    <div class="rl-wrap rl-toolbar">
+        <label class="sr-only" for="rl-ev-cat">Event category</label>
+        <span class="rl-select">
+            <select id="rl-ev-cat" data-rl-nav>
+                <option value="{{ 'events'|page({}, false) }}" {{ not categoryId ? 'selected' }}>All events</option>
+                {% for c in categories %}
+                <option value="{{ 'events'|page({}, false) }}/category/{{ category_slugs[c.id] }}" {{ c.id == categoryId ? 'selected' }}>{{ c.title }}</option>
+                {% endfor %}
+            </select>
+            {% partial 'realise/icon' name='select' %}
+        </span>
+    </div>
+</section>
+{% endif %}
+
+
+<section class="rl-band" id="upcoming-list" aria-labelledby="upcoming-heading">
+    <div class="rl-wrap">
+        <div class="rl-subhead"><h2 id="upcoming-heading">Upcoming events</h2></div>
+        {% for entry in entries %}{% partial 'realise/event-row' entry=entry %}{% else %}
+        <p class="rl-empty">{{ categoryId ? 'No upcoming events in this category yet.' : 'Upcoming events will be announced soon.' }}</p>
+        {% endfor %}
+        {% partial 'realise/pager' p=entries label='Upcoming events pages' hash='upcoming-list' %}
+    </div>
+</section>
+
+{% if past_entries.total %}
+<section class="rl-band" id="past-list" aria-labelledby="past-heading">
+    <div class="rl-wrap">
+        <div class="rl-subhead"><h2 id="past-heading">Past events</h2></div>
+        {% for entry in past_entries %}{% partial 'realise/event-row' entry=entry %}{% endfor %}
+        {% partial 'realise/pager' p=past_entries label='Past events pages' hash='past-list' %}
+    </div>
+</section>
+{% endif %}
+
+{% else %}
+
+{% partial 'realise/page-hero' parent={ title: 'Events', url: 'events'|page({}, false) } crumb=(entry ? entry.place : '') title='Events' heading=false %}
+
+<section class="rl-band">
+    <div class="rl-wrap rl-article">
+        <div class="rl-article__back">
+            <a class="rl-link" href="{{ 'events'|page({}, false) }}">{% partial 'realise/icon' name='arrow-left' %} {% partial 'realise/roll' text='Back to events' %}</a>
+        </div>
+        {% if entry %}
+        {% if entry.cover_image %}
+        <figure class="rl-article__cover"><img src="{{ entry.cover_image.path }}" alt=""></figure>
+        {% endif %}
+        <article class="rl-article__body">
+            <span class="rl-article__date">
+                {% if entry.end and entry.start|date('Y-m-d') != entry.end|date('Y-m-d') %}
+                {{ entry.start|date('d M Y') }} – {{ entry.end|date('d M Y') }}
+                {% else %}
+                {{ entry.start|date('d M Y') }}
+                {% endif %}
+                {% if entry.place %} · {{ entry.place }}{% endif %}
+            </span>
+            <h1 class="rl-article__title" id="event-detail-title">{{ entry.title|striptags }}</h1>
+            <div class="rl-prose">{{ entry.description|raw }}</div>
+            {% if entry.url %}
+            <a class="rl-btn rl-btn--sm" style="align-self:flex-start" href="{{ entry.url }}" target="_blank" rel="noopener noreferrer">
+                {% partial 'realise/roll' text='Event website' %}<span class="sr-only"> (opens in a new tab)</span>
+                <span class="rl-btn__sq">{% partial 'realise/icon' name='external' %}</span>
+            </a>
+            {% endif %}
+            <div class="rl-share">
+                <span class="rl-eyebrow">Share</span>
+                <div class="rl-social">
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page_url|url_encode }}" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn (opens in a new tab)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.22 8h4.56v14H.22V8zm7.5 0h4.37v1.92h.06c.61-1.15 2.1-2.36 4.32-2.36 4.62 0 5.47 3.04 5.47 7v7.44h-4.56v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.53 1.72-2.53 3.49V22H7.72V8z"/></svg></a>
+                    <a href="https://bsky.app/intent/compose?text={{ (entry.title|striptags ~ ' ' ~ page_url)|url_encode }}" target="_blank" rel="noopener noreferrer" aria-label="Share on Bluesky (opens in a new tab)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M5.2 3.3C7.9 5.3 10.8 9.4 12 11.8c1.2-2.4 4.1-6.5 6.8-8.5 2-1.4 5.2-2.6 5.2 1 0 .7-.4 6-.7 6.8-.9 3-4 3.8-6.7 3.3 4.8.8 6 3.5 3.4 6.2-5 5.1-7.1-1.3-7.7-2.9L12 17l-.3.7c-.6 1.6-2.7 8-7.7 2.9-2.6-2.7-1.4-5.4 3.4-6.2-2.8.5-5.8-.3-6.7-3.3C.4 10.3 0 5 0 4.3c0-3.6 3.2-2.4 5.2-1z"/></svg></a>
+                </div>
+            </div>
+        </article>
+        {% else %}
+        <p class="rl-empty">This event could not be found.</p>
+        {% endif %}
+    </div>
+</section>
+
+{% endif %}

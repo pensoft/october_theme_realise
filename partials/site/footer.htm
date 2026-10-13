@@ -1,0 +1,77 @@
+[jumbotron disclaimer]
+jumbotron = "disclaimer"
+background = "transperant"
+templates = "template3"
+description_limit = 0
+
+[cookieConsent]
+message = "This website uses cookies to ensure you get the best experience on our website."
+dismiss = "Got it!"
+learnMore = "Opt-out here"
+link = "/privacy-policy#cookies"
+theme = "dark-bottom"
+==
+{% component 'cookieConsent' %}
+
+{#
+    REALISE footer: newsletter call-to-action + quick links, EU funding
+    statement + social links, then the legal row.
+
+    The layout supplies the <footer> landmark; this is its content.
+#}
+{% set rl_flag = footer_funds_flag ? footer_funds_flag : ('assets/realise/img/funded-by-eu.png'|theme) %}
+
+<div class="rl-wrap">
+    <div class="rl-footer__row">
+        <div class="rl-footer__main">
+            <h2 class="rl-footer__title">Subscribe to our newsletter!</h2>
+            <div class="rl-footer__form">
+                <a class="rl-btn" {% partial 'realise/subscribe-link' %}>
+                    {% partial 'realise/roll' text='Subscribe' %}{% partial 'realise/subscribe-link' hint=true %}
+                    <span class="rl-btn__sq">{% partial 'realise/icon' name='arrow-right' size=16 %}</span>
+                </a>
+            </div>
+        </div>
+        <nav class="rl-footer__links" aria-labelledby="rl-footer-links">
+            <span class="rl-eyebrow" id="rl-footer-links">Quick links</span>
+            <ul>
+                <li><a href="{{ 'about'|page }}">About</a></li>
+                <li><a href="{{ 'partners'|page }}">Partners</a></li>
+                <li><a href="{{ 'news'|page({}, false) }}">News &amp; Events</a></li>
+                <li><a href="{{ 'library'|page }}">Library</a></li>
+                <li><a href="{{ 'media-center'|page }}">Media Centre</a></li>
+                <li><a href="{{ 'contact'|page }}">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="rl-footer__row">
+        <div class="rl-footer__fund">
+            <img src="{{ rl_flag }}" alt="Funded by the European Union" width="251" height="56">
+            <div class="rl-footer__fund-text">
+                {# "disclaimer" entry in Pensoft.Jumbotron #}
+                <div class="rl-cms">{% component 'disclaimer' %}</div>
+            </div>
+        </div>
+        {% set rl_social_html %}{% partial 'realise/socials' %}{% endset %}
+        {% if rl_social_html|trim %}
+        <div class="rl-footer__follow">
+            <span class="rl-eyebrow">Follow us</span>
+            {{ rl_social_html|raw }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="rl-footer__legal">
+        <span>&copy; {{ 'now'|date('Y') }} REALISE</span>
+        <nav aria-label="Legal">
+            <a href="{{ 'privacy-policy'|page }}">Privacy policy</a>
+            <a href="{{ 'accessibility-policy'|page }}">Accessibility</a>
+        </nav>
+        <span class="rl-footer__credit">Designed by
+            <a href="https://pensoft.net/" target="_blank" rel="noopener noreferrer">
+                <img src="{{ 'assets/realise/logos/pensoft.svg'|theme }}" alt="Pensoft Publishers" height="16">{% partial 'components/new-tab-hint' %}
+            </a>
+        </span>
+    </div>
+</div>

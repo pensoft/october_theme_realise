@@ -1,0 +1,236 @@
+.ui.form {
+    .field + .field {
+        margin-top: 1rem;
+    }
+    .fields {
+        display: flex;
+        margin: 0 -.5rem;
+        flex-direction: column;
+
+        .field + .field {
+            margin-top: 1rem;
+        }
+
+        &.inline {
+            flex-direction: row;
+
+            .field {
+                margin-top: 0;
+            }
+        }
+        .field {
+            padding-left: .5rem;
+            padding-right: .5rem;
+            clear: both;
+            margin: 0;
+        }
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        width: 100% !important;
+        &.inline {
+            flex-direction: row;
+            width: auto;
+            align-items: center!important;
+            input, textarea {
+                width: auto;
+            }
+        }
+        & > label {
+            display: block;
+            margin: 0 0 .3rem 9px;
+            white-space: nowrap;
+        }
+        & > input, textarea, select {
+            display: block;
+            width: 100%;
+            font-size: 15px;
+            color: #004D74;
+            background: @white-color 0% 0% no-repeat padding-box;
+            border-radius: 5px;
+            box-sizing: border-box;
+            padding: .555rem 1rem;
+            .line-height();
+            //border: 0px solid @border-color;
+            //border-right-width: 15px;
+            //border-right-color: white;
+            //box-shadow: 0 0 0 1px @border-color;
+            height: 47px;
+            line-height: 1em;
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
+
+    .field, .group-holder label{
+        position: relative;
+    }
+
+    /* Hide the default checkbox */
+    input[type="checkbox"] {
+        visibility: hidden;
+        cursor: pointer;
+        margin-right: 10px
+    }
+
+    /* Create a custom checkbox */
+    .mark {
+        position: absolute;
+        top: 8px;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: white;
+        border: 1px solid @green-color;
+        cursor: pointer;
+    }
+
+    .field:hover input ~ .mark {
+        background-color: @green-color;
+        opacity: 0.3;
+    }
+
+    input:checked ~ .mark {
+        background-color: @green-color!important;
+        background-image: none;
+    }
+
+    /* Create the mark/indicator (hidden when not checked) */
+    .mark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    /* Show the mark when checked */
+    input:checked ~ .mark:after {
+        display: block;
+    }
+
+    /* Style the mark/indicator */
+    .mark:after {
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        transform: rotate(45deg);
+    }
+
+    .align-items-baseline {
+        position: relative;
+    }
+
+}
+
+.login-container, .register-container, .profile-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.remember-me-check{
+    .breakpoint-large-down({
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    });
+}
+
+.forgot-pw, .remember-me{
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    label{
+        color: #004D74 !important;
+    }
+    .breakpoint-large-down({
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    });
+}
+
+.register{
+    form{
+        width: 100% !important;
+    }
+}
+
+.login_form_container{
+    .email{
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &:after{
+            content: "";
+            position: absolute;
+            background: url("../../assets/images/email-icon-2.svg") center center no-repeat;
+            background-size: contain;
+            width: 18px;
+            height: 15px;
+            right: 18px;
+        }
+    }
+    .password{
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &:after{
+            content: "";
+            position: absolute;
+            background: url("../../assets/images/eye-icon.svg") center center no-repeat;
+            background-size: contain;
+            width: 18px;
+            height: 15px;
+            right: 18px;
+        }
+    }
+}
+.login_form_container, .register-container, .profile-container, .mailing .container{
+    background: #004D740A;
+    border-radius: 10px;
+    margin: 0 auto;
+    padding: 40px 50px!important;
+    .intro-login-text{
+        display: flex;
+        justify-content: center;
+        p{
+            width: 80%;
+            display: flex;
+            justify-content: center;
+            text-align: center;
+            font-size: 18px;
+            color: #004D74 !important;
+            .breakpoint-large-down({
+                width: 100%;
+            });
+        }
+    }
+    button{
+        border: none;
+        padding: 15px 30px;
+    }
+    input{
+        background: #F6F6F6 0% 0% no-repeat padding-box;
+        //border-radius: 5px;
+        border: none;
+        //width: 100% !important;
+        margin: 0 auto;
+    }
+    //a{
+    //    &:hover{
+    //        opacity: 0.85;
+    //    }
+    //}
+    label{
+        color: #004D74 !important;
+    }
+}

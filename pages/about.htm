@@ -1,0 +1,139 @@
+url = "/about"
+layout = "default"
+title = "About"
+is_hidden = 0
+meta_description = "About REALISE: the problem, what the project will do, its objectives and work packages."
+robot_index = "index"
+robot_follow = "follow"
+
+[siteSearchInclude]
+
+; Every About text is a Pensoft.Jumbotron entry with an "about-" slug (backend >
+; Jumbotron). This one component renders each entry's body: the markup passes
+; the slug per call, e.g. {% component 'about_text' jumbotron='about-problem' %}.
+; Section and item headings are the entries' titles.
+[jumbotron about_text]
+jumbotron = "about-problem"
+background = "transperant"
+templates = "template3"
+description_limit = 0
+==
+<?php
+use Pensoft\Jumbotron\Models\Jumbotron;
+
+function onStart()
+{
+    $data = include themes_path(\Cms\Classes\Theme::getActiveThemeCode() . '/meta/realise-data.php');
+
+    $entries = Jumbotron::where('slug', 'like', 'about-%')->get()->keyBy('slug');
+    $this['about'] = $entries;
+
+    // Numbered entries (about-deliverable-1, about-deliverable-2, ...) in
+    // number order, so adding "-7" adds an item without touching the page.
+    $series = function ($prefix) use ($entries) {
+        return $entries->filter(function ($e, $slug) use ($prefix) {
+            return preg_match('/^' . preg_quote($prefix, '/') . '\d+$/', $slug);
+        })->sortBy(function ($e) use ($prefix) {
+            return (int) substr($e->slug, strlen($prefix));
+        })->values();
+    };
+
+    $this['deliverables'] = $series('about-deliverable-');
+    $this['objectives'] = $series('about-objective-');
+    // Work packages: Pensoft.Accordions items in the "Work packages" category
+    // (slug work-packages), in backend order. Prefix = "WP1", title, body =
+    // description, Partner = lead (shown as "Led by <partner> (<country>)").
+    $wpCat = \Pensoft\Accordions\Models\Category::where('slug', 'work-packages')->first();
+    $display = $data['country_display'];
+    $this['work_packages'] = !$wpCat ? [] : \Pensoft\Accordions\Models\Item::with('partner.country')
+        ->where('category_id', $wpCat->id)->orderBy('sort_order')->get()
+        ->map(function ($i) use ($display) {
+            $lead = null;
+            if ($i->partner) {
+                $code = optional($i->partner->country->first())->code;
+                $code = isset($display[$code]) ? $display[$code] : $code;
+                $lead = ($i->partner->instituion ?: $i->partner->title) . ($code ? ' (' . $code . ')' : '');
+            }
+            return ['prefix' => $i->prefix, 'title' => $i->title, 'body' => $i->body, 'lead' => $lead];
+        })->all();
+    // Deliverable icons stay in the theme (inline SVG paths), by position.
+    $this['deliverable_icons'] = $data['deliverable_icons'];
+}
+?>
+==
+{% component 'siteSearchInclude' %}
+
+{% partial 'realise/page-hero' crumb='About' title='About REALISE' %}
+
+{% if about['about-problem'] %}
+<section class="rl-band" aria-labelledby="about-problem">
+    <div class="rl-wrap rl-split">
+        <div class="rl-split__aside"><h2 id="about-problem">{{ about['about-problem'].title }}</h2></div>
+        <div class="rl-split__body rl-cms">{% component 'about_text' jumbotron='about-problem' %}</div>
+    </div>
+</section>
+{% endif %}
+
+{% if about['about-what-we-do'] or deliverables|length %}
+<section class="rl-band" aria-labelledby="about-do">
+    <div class="rl-wrap rl-split">
+        <div class="rl-split__aside"><h2 id="about-do">{{ about['about-what-we-do'] ? about['about-what-we-do'].title : 'What will we do?' }}</h2></div>
+        <div class="rl-split__body">
+            {% if about['about-what-we-do'] %}
+            <div class="rl-cms">{% component 'about_text' jumbotron='about-what-we-do' %}</div>
+            {% endif %}
+            <div class="rl-deliverables">
+                {% for d in deliverables %}
+                {% set icon = deliverable_icons[(loop.index0) % deliverable_icons|length] %}
+                <div class="rl-deliverable">
+                    <span class="rl-icon-tile" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="{{ icon }}"/></svg></span>
+                    <b>{{ d.title }}</b>
+                    <div class="rl-cms rl-deliverable__text">{% component 'about_text' jumbotron=d.slug %}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if objectives|length %}
+<section class="rl-band" aria-labelledby="about-objectives">
+    <div class="rl-wrap rl-split">
+        <div class="rl-split__aside"><h2 id="about-objectives">{{ about['about-objectives'] ? about['about-objectives'].title : 'Our objectives' }}</h2></div>
+        <ol class="rl-split__body rl-split__body--flush" style="list-style:none;margin:0">
+            {% for o in objectives %}
+            <li class="rl-objective">
+                <span class="rl-icon-tile" aria-hidden="true">{% partial 'realise/icon' name='check' size=22 %}</span>
+                <div><b>{{ o.title }}</b><div class="rl-cms rl-objective__text">{% component 'about_text' jumbotron=o.slug %}</div></div>
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+</section>
+{% endif %}
+
+{% if work_packages|length %}
+<section class="rl-band" aria-labelledby="about-wps" id="work-packages">
+    <div class="rl-wrap">
+        <div class="rl-head"><h2 class="rl-h2" id="about-wps" data-fade>{{ about['about-work-packages'] ? about['about-work-packages'].title : 'Work Packages' }}</h2></div>
+        <div class="rl-wps">
+            {# Pensoft.Accordions "Work packages" items, see onStart(). #}
+            {% for w in work_packages %}
+            {% set wp = w.prefix ?: 'WP' ~ loop.index %}
+            <article class="rl-wp">
+                <span class="rl-wp__num" aria-hidden="true">{{ wp }}</span>
+                <h3><span class="sr-only">{{ wp }}: </span>{{ w.title }}</h3>
+                <div class="rl-wp__more" id="rl-wp-{{ loop.index }}" hidden>
+                    {% if w.lead %}<span class="rl-eyebrow">Led by {{ w.lead }}</span>{% endif %}
+                    <div class="rl-wp__text">{{ w.body|ensure_img_alt|raw }}</div>
+                </div>
+                <button type="button" class="rl-wp__toggle" data-rl-toggle aria-expanded="false" aria-controls="rl-wp-{{ loop.index }}">
+                    <span data-rl-toggle-label>Read more</span>{% partial 'realise/icon' name='arrow-down' %}
+                </button>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}

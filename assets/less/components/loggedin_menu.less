@@ -1,0 +1,90 @@
+.navbar-loggedin-user{
+    background: #566770;
+    position: fixed;
+    z-index: 9999;
+    height: 58px;
+    width: 100%;
+    padding-top: 19px;
+}
+
+.navbar-loggedin-user ul{
+    list-style-type: none;
+    .breakpoint-small-down({
+        padding: 0;
+    })
+}
+
+.navbar-loggedin-user ul li{
+    display: inline;
+    padding: 0 20px 0 0;
+    font-size: 16px;
+    .breakpoint-small-down({
+        padding: 0 10px;
+    })
+}
+
+.navbar-loggedin-user ul li a{
+    color: @white-color;
+    .breakpoint-small-down({
+        padding: 0;
+        font-size: 16px;
+    })
+}
+
+.navbar-loggedin-user ul li a:hover{
+    opacity: 0.6;
+}
+
+.navbar-loggedin-user li.active a{}
+
+.nav-item.sign-in a{
+    color: @date-text-color!important;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    .breakpoint-small-down({
+        padding: 0;
+        padding-bottom: 5px;
+        color: @date-text-color!important;
+    });
+}
+
+#headerNavbarLogin{
+    .breakpoint-small-down({
+        display: none;
+    });
+}
+
+.profile_name span{
+    color: @white-color;
+    .breakpoint-large-down({
+        display: none;
+    })
+}
+
+#headerNavbar{
+    .breakpoint-small-down({
+        display: flex;
+    });
+}
+
+#menuToggle{
+    .breakpoint-huge-down({
+        order: 3;
+    });
+    .breakpoint-small-down({
+        order: 2;
+    });
+}
+
+.navbar-brand{
+    .breakpoint-huge-down({
+        order: 1;
+    });
+    .breakpoint-small-down({
+        order: 1;
+    });
+}

@@ -1,0 +1,19 @@
+{#
+    URL for a file attachment, served by the "download" page
+    (pages/download.htm): /download/<file id>/<original file name>.
+
+    The URL carries the file's ORIGINAL upload name (System\Models\File
+    file_name), not the hashed disk name - readable for visitors and for
+    Matomo's Downloads report. Renders nothing but the URL, for use in an
+    attribute:
+
+        <a href="{{ partial('components/download-url', { file: record.file }) }}">
+
+    For complete link attributes (href + new tab for PDFs) use
+    partials/realise/file-link.htm instead.
+#}
+{%- if file -%}
+    {# Slashes cannot travel in a URL segment; everything else is kept. #}
+    {%- set fname = file.file_name|default('file-' ~ file.id)|replace({'/': '-', '\\': '-'})|trim -%}
+    {{- 'download'|page({ id: file.id, name: fname }, false) -}}
+{%- endif -%}

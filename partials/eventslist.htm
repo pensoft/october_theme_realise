@@ -1,0 +1,30 @@
+<div class="events_list_container">
+    {% for entry in records %}
+    {% set url = '/events/' ~ entry.slug %}
+    <article class="row entry_item middle-xs" aria-labelledby="event-list-title-{{loop.index}}">
+
+        <div class="col-md-11 col-xs-12 body_container">
+            {#
+                The cover image links to the same event as the title, so it is
+                hidden from assistive technology rather than announced as a
+                second, unnamed link.
+            #}
+            {% if entry.cover_image %}
+            <a href="{{url}}" tabindex="-1" aria-hidden="true">
+                <img src="{{entry.cover_image.getThumb(auto, auto, {'mode': 'crop'})}}" alt="">
+            </a>
+            {% endif %}
+            <a href="{{url}}">
+                <div class="entry_content">
+                    <time class="date_container" datetime="{{entry.start|date('Y-m-d')}}">{{entry.start|date("j M")}}</time>
+                    <h3 class="entry_title" id="event-list-title-{{loop.index}}">{{entry.title|raw}}</h3>
+                </div>
+            </a>
+
+        </div>
+        <div class="col-md-1 col-xs-12 read-more-events end-md center-xs">
+            <a href="{{url}}" class="read-more" aria-label="{{'Read more'|_}}: {{entry.title|striptags}}">{{'Read more'|_}}</a>
+        </div>
+    </article>
+    {% endfor %}
+</div>

@@ -1,0 +1,284 @@
+title = "Search"
+url = "/search"
+layout = "default"
+is_hidden = 0
+robot_index = "noindex"
+robot_follow = "follow"
+==
+<?php
+use Pensoft\Articles\Models\Article;
+use Pensoft\Calendar\Models\Entry;
+use Pensoft\Library\Models\Library;
+use Pensoft\Partners\Models\Partners;
+use Pensoft\Media\Models\Newsletters;
+use Pensoft\Media\Models\Pressreleases;
+use Pensoft\Jumbotron\Models\Jumbotron;
+
+/*
+ * Site search, done by the theme (the OFFLINE.SiteSearch plugin needs PHP 8).
+ *
+ *   /search?q=<words>               results page, grouped by content type
+ *   /search?q=<words>&format=json   top hits for the header search popup
+ *                                   (assets/realise/js/realise.js, initSearch)
+ *
+ * Every word must appear (case-insensitive) in at least one searched field.
+ */
+
+function searchTerms($q)
+{
+    $terms = preg_split('/\s+/u', mb_strtolower(trim($q)), -1, PREG_SPLIT_NO_EMPTY);
+    return array_slice(array_unique($terms), 0, 6);
+}
+
+// Each term must match one of $columns (ILIKE, Postgres).
+function matchAll($query, $columns, $terms)
+{
+    foreach ($terms as $t) {
+        $like = '%' . addcslashes($t, '%_\\') . '%';
+        $query->where(function ($w) use ($columns, $like) {
+            foreach ($columns as $c) {
+                $w->orWhere($c, 'ILIKE', $like);
+            }
+        });
+    }
+    return $query;
+}
+
+function plain($html)
+{
+    $text = html_entity_decode(strip_tags(str_replace('<', ' <', (string) $html)), ENT_QUOTES, 'UTF-8');
+    return trim(preg_replace('/\s+/u', ' ', $text));
+}
+
+// Escaped text with the search words wrapped in <mark>.
+function highlight($text, $terms)
+{
+    $html = e($text);
+    $words = array_map(function ($t) { return preg_quote(e($t), '/'); }, $terms);
+    return $words ? preg_replace('/(' . implode('|', $words) . ')/iu', '<mark>$1</mark>', $html) : $html;
+}
+
+// ~200 characters around the first search word found in the text.
+function excerpt($text, $terms, $len = 200)
+{
+    $text = $this->plain($text);
+    if ($text === '') {
+        return '';
+    }
+    $pos = false;
+    foreach ($terms as $t) {
+        $p = mb_stripos($text, $t);
+        if ($p !== false && ($pos === false || $p < $pos)) {
+            $pos = $p;
+        }
+    }
+    $start = $pos === false ? 0 : max(0, $pos - 60);
+    if ($start > 0) {
+        $space = mb_strpos($text, ' ', $start);
+        $start = $space !== false && $space < $pos ? $space + 1 : $start;
+    }
+    $cut = mb_substr($text, $start, $len);
+    if ($start + $len < mb_strlen($text)) {
+        $cut = preg_replace('/\s+\S*$/u', '', $cut) . '...';
+    }
+    return $this->highlight(($start > 0 ? '...' : '') . $cut, $terms);
+}
+
+function item($type, $title, $url, $text, $terms, $extra = [])
+{
+    return array_merge([
+        'type' => $type,
+        'title' => $this->highlight($this->plain($title), $terms),
+        'label' => $this->plain($title),
+        'url' => $url,
+        'excerpt' => $this->excerpt($text, $terms),
+        'external' => (bool) preg_match('{^https?://}i', $url) && strpos($url, url('/')) !== 0,
+    ], $extra);
+}
+
+/** Grouped results: [ ['key', 'title', items[]], ... ] */
+function runSearch($terms)
+{
+    $groups = [];
+    $add = function ($key, $title, $items) use (&$groups) {
+        if (count($items)) {
+            $groups[] = ['key' => $key, 'title' => $title, 'items' => array_values($items)];
+        }
+    };
+
+    // Pages: texts kept in Pensoft.Jumbotron, mapped to the page section that
+    // shows them: [url, result title]. The entries' own titles are backend
+    // names (e.g. "Home - hero lead"), so the section names are used.
+    $pageFor = function ($slug) {
+        $about = $this->pageUrl('about', [], false);
+        if (strpos($slug, 'home-') === 0) return [$this->pageUrl('home', [], false), 'Home'];
+        if ($slug === 'about-problem') return [$about . '#about-problem', 'About: What is the problem?'];
+        if ($slug === 'about-what-we-do' || strpos($slug, 'about-deliverable-') === 0) return [$about . '#about-do', 'About: What will we do?'];
+        if (strpos($slug, 'about-objective') === 0) return [$about . '#about-objectives', 'About: Our objectives'];
+        if ($slug === 'about-work-packages') return [$about . '#work-packages', 'About: Work packages'];
+        if ($slug === 'privacy-policy') return [$this->pageUrl('privacy-policy', [], false), 'Privacy policy'];
+        if ($slug === 'accessibility-policy') return [$this->pageUrl('accessibility-policy', [], false), 'Accessibility policy'];
+        return null;
+    };
+    $pages = [];
+    foreach ($this->matchAll(Jumbotron::query(), ['title', 'body'], $terms)->get() as $j) {
+        $to = $pageFor($j->slug);
+        if ($to && !isset($pages[$to[0]])) {
+            $pages[$to[0]] = $this->item('Page', $to[1], $to[0], $j->body, $terms);
+        }
+    }
+    $wpCat = \Pensoft\Accordions\Models\Category::where('slug', 'work-packages')->first();
+    if ($wpCat) {
+        $q = \Pensoft\Accordions\Models\Item::where('category_id', $wpCat->id);
+        foreach ($this->matchAll($q, ['title', 'body', 'prefix'], $terms)->orderBy('sort_order')->get() as $w) {
+            $pages[] = $this->item('Work package', trim(($w->prefix ? $w->prefix . ': ' : '') . $w->title), $this->pageUrl('about', [], false) . '#work-packages', $w->body, $terms);
+        }
+    }
+    $add('pages', 'Pages', $pages);
+
+    $news = $this->matchAll(Article::news()->where('published', 'true')->where('published_at', '<=', 'now'), ['title', 'content', 'keywords'], $terms)
+        ->orderBy('published_at', 'desc')->take(50)->get()->map(function ($a) use ($terms) {
+            $url = $a->external && $a->url ? $a->url : $this->pageUrl('news', ['id' => $a->slug], false);
+            return $this->item('News', $a->title, $url, $a->content, $terms, ['date' => $a->published_at ? \Carbon\Carbon::parse($a->published_at)->format('d M Y') : null]);
+        })->all();
+    $add('news', 'News', $news);
+
+    $events = $this->matchAll(Entry::query(), ['title', 'description', 'place'], $terms)
+        ->orderBy('start', 'desc')->take(50)->get()->map(function ($e) use ($terms) {
+            $url = $e->url ?: $this->pageUrl('events', ['slug' => $e->slug], false);
+            return $this->item('Event', $e->title, $url, $e->description ?: $e->place, $terms, ['date' => $e->start ? \Carbon\Carbon::parse($e->start)->format('d M Y') : null]);
+        })->all();
+    $add('events', 'Events', $events);
+
+    $library = $this->matchAll(Library::query(), ['title', 'authors', 'keywords', 'description', 'journal_title', 'deliverable_number'], $terms)
+        ->orderBy('title')->take(50)->get()->map(function ($r) use ($terms) {
+            $url = $this->pageUrl('library', [], false) . '?search=' . rawurlencode($this->plain($r->title));
+            $text = $r->description ?: ($r->authors ? 'Authors: ' . $r->authors : '');
+            return $this->item($r->type_attr ?: 'Library', $r->title, $url, $text, $terms, ['date' => $r->year ? \Carbon\Carbon::parse($r->year)->format('Y') : null]);
+        })->all();
+    $add('library', 'Library', $library);
+
+    // Partners open their details dialog: /partners?partners_pager=N#rl-partner-p<ID>
+    $order = Partners::where('type', 1)->orderBy('nest_left')->pluck('id')->all();
+    $partners = $this->matchAll(Partners::where('type', 1), ['title', 'instituion', 'content'], $terms)
+        ->orderBy('nest_left')->get()->map(function ($p) use ($terms, $order) {
+            $page = intdiv((int) array_search($p->id, $order), 12) + 1;
+            $url = $this->pageUrl('partners', [], false) . ($page > 1 ? '?partners_pager=' . $page : '') . '#rl-partner-p' . $p->id;
+            return $this->item('Partner', $p->instituion ?: $p->title, $url, $p->content, $terms);
+        })->all();
+    $add('partners', 'Partners', $partners);
+
+    $media = [];
+    $mc = $this->pageUrl('media-center', [], false);
+    // Only the Media Centre sections that are switched on (meta/realise-data.php).
+    $data = include themes_path(\Cms\Classes\Theme::getActiveThemeCode() . '/meta/realise-data.php');
+    $show = $data['media_sections'];
+    foreach ($show['newsletters'] ? $this->matchAll(Newsletters::query(), ['name'], $terms)->orderBy('date', 'desc')->get() : [] as $n) {
+        $media[] = $this->item('Newsletter', $n->name, $mc . '#media-news', '', $terms, ['date' => $n->date ? \Carbon\Carbon::parse($n->date)->format('M Y') : null]);
+    }
+    foreach ($show['press'] ? $this->matchAll(Pressreleases::query(), ['name', 'description'], $terms)->orderBy('date', 'desc')->get() : [] as $p) {
+        $media[] = $this->item('Press release', $p->name, $mc . '#media-press', $p->description, $terms, ['date' => $p->date ? \Carbon\Carbon::parse($p->date)->format('d M Y') : null]);
+    }
+    $add('media', 'Media Centre', $media);
+
+    $cat = \Pensoft\Cardprofiles\Models\Category::where('slug', 'contacts')->first();
+    if ($cat) {
+        $q = \Pensoft\Cardprofiles\Models\Profiles::where('category_id', $cat->id);
+        $people = $this->matchAll($q, ['names', 'position', 'content', 'department'], $terms)->orderBy('sort_order')->get()->map(function ($p) use ($terms) {
+            return $this->item('Contact', $p->names, $this->pageUrl('contact', [], false), $p->position ?: $p->content, $terms);
+        })->all();
+        $add('contacts', 'Contacts', $people);
+    }
+
+    return $groups;
+}
+
+function onInit()
+{
+    $q = trim((string) input('q'));
+    if ($q !== '') {
+        // The SEO component prints the title unescaped: keep markup
+        // characters out of it.
+        $safe = trim(preg_replace('/[<>"&\x00-\x1F]+/u', ' ', $q));
+        $this->page->title = $safe !== '' ? 'Search results for "' . str_limit($safe, 60) . '"' : 'Search results';
+    }
+}
+
+function onStart()
+{
+    $q = trim(mb_substr((string) input('q'), 0, 120));
+    $terms = $this->searchTerms($q);
+    $groups = $terms ? $this->runSearch($terms) : [];
+    $total = array_sum(array_map(function ($g) { return count($g['items']); }, $groups));
+
+    if (input('format') === 'json') {
+        $top = [];
+        foreach ($groups as $g) {
+            foreach (array_slice($g['items'], 0, 3) as $i) {
+                $top[] = array_only($i, ['type', 'title', 'label', 'url', 'external', 'date']);
+            }
+        }
+        return Response::json([
+            'query' => $q,
+            'total' => $total,
+            'items' => array_slice($top, 0, 7),
+            'all' => $this->pageUrl('search', [], false) . '?q=' . rawurlencode($q),
+        ])->header('Cache-Control', 'no-store');
+    }
+
+    $this['q'] = $q;
+    $this['groups'] = $groups;
+    $this['total'] = $total;
+}
+?>
+==
+{% partial 'realise/page-hero' crumb='Search' title=(q ? 'Search results' : 'Search') %}
+
+<section class="rl-band rl-search-page" aria-label="Search">
+    <div class="rl-wrap">
+        <form class="rl-search-form" action="{{ 'search'|page({}, false) }}" method="get" role="search" aria-label="Site">
+            <label for="rl-search-page-input" class="sr-only">Search the site</label>
+            <span class="rl-search-form__icon">{% partial 'realise/icon' name='search' size=20 %}</span>
+            <input id="rl-search-page-input" class="rl-search-form__input" type="search" name="q" value="{{ q }}" placeholder="Search news, events, publications..." autocomplete="off" enterkeyhint="search">
+            <button type="submit" class="rl-btn rl-btn--sm">{% partial 'realise/roll' text='Search' %}<span class="rl-btn__sq">{% partial 'realise/icon' name='arrow-right' %}</span></button>
+        </form>
+
+        <p class="rl-search-page__status" role="status">
+            {% if not q %}
+            Type a word or phrase to search the website.
+            {% elseif total %}
+            {{ total }} {{ total == 1 ? 'result' : 'results' }} for <strong>"{{ q }}"</strong>
+            {% else %}
+            No results for <strong>"{{ q }}"</strong>. Try fewer or different words.
+            {% endif %}
+        </p>
+
+        {% if groups|length > 1 %}
+        <nav class="rl-search-page__jump" aria-label="Result types">
+            {% for g in groups %}
+            <a href="#results-{{ g.key }}">{{ g.title }} <span>{{ g.items|length }}</span></a>
+            {% endfor %}
+        </nav>
+        {% endif %}
+
+        {% for g in groups %}
+        <section class="rl-results" id="results-{{ g.key }}" aria-labelledby="results-{{ g.key }}-heading">
+            <h2 class="rl-results__title" id="results-{{ g.key }}-heading">{{ g.title }} <span class="rl-results__count">({{ g.items|length }})</span></h2>
+            <ul class="rl-results__list">
+                {% for i in g.items %}
+                <li class="rl-result">
+                    <div class="rl-result__meta">
+                        <span class="rl-result__type">{{ i.type }}</span>
+                        {% if i.date %}<span class="rl-result__date">{{ i.date }}</span>{% endif %}
+                    </div>
+                    <h3 class="rl-result__title">
+                        <a href="{{ i.url }}" {% if i.external %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ i.title|raw }}{% if i.external %}{% partial 'components/new-tab-hint' %}{% endif %}</a>
+                    </h3>
+                    {% if i.excerpt %}<p class="rl-result__text">{{ i.excerpt|raw }}</p>{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endfor %}
+    </div>
+</section>

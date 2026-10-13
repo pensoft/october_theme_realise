@@ -1,0 +1,18 @@
+{# One news card. record = Pensoft\Articles\Models\Article. The "Read more"
+   link is stretched over the whole card (.rl-news-card .rl-link::before). #}
+{% set rl_external = record.external and record.url %}
+{% set rl_url = rl_external ? record.url : ('news'|page({ id: record.slug })) %}
+<article class="rl-news-card">
+    <img class="rl-news-card__img" src="{{ record.cover ? record.cover.getThumb(880, 550, { mode: 'crop' }) : ('assets/realise/img/news-placeholder.png'|theme) }}" alt="" loading="lazy">
+    <div class="rl-news-card__meta">
+        <time class="rl-date" datetime="{{ record.published_at|date('Y-m-d') }}">{{ record.published_at|date('d M Y') }}</time>
+        {% if show_category and record.categories|length %}
+        <span class="rl-pill">{{ record.categories.first.name }}</span>
+        {% endif %}
+    </div>
+    <h3 {% if fade %}data-fade{% endif %}>{{ record.title|striptags }}</h3>
+    <a class="rl-link" href="{{ rl_url }}" {% if rl_external %}target="_blank" rel="noopener noreferrer"{% endif %}>
+        {% partial 'realise/roll' text='Read more' %}<span class="sr-only">: {{ record.title|striptags }}</span>{% if rl_external %}{% partial 'components/new-tab-hint' %}{% endif %}
+        {% partial 'realise/icon' name='arrow-right' %}
+    </a>
+</article>

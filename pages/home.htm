@@ -1,0 +1,279 @@
+url = "/"
+layout = "default"
+title = "REALISE"
+is_hidden = 0
+meta_description = "REALISE - transforming European research assessment by building the evidence base for more inclusive and responsible assessment practices."
+robot_index = "index"
+robot_follow = "follow"
+
+; Homepage copy lives in Pensoft.Jumbotron (backend > Jumbotron). The
+; approach cards use the entry's Title as the card heading, its Body as the
+; text and its Image as the icon. `background` is set so the component does
+; not add its textured .bg-secondary class.
+[jumbotron hero_lead]
+jumbotron = "home-hero-lead"
+background = "transperant"
+templates = "template3"
+description_limit = 0
+
+[jumbotron approach_intro]
+jumbotron = "home-approach-intro"
+background = "transperant"
+templates = "template3"
+description_limit = 0
+
+[jumbotron approach_consolidate]
+jumbotron = "home-approach-consolidate"
+background = "transperant"
+templates = "template3"
+description_limit = 0
+
+[jumbotron approach_test]
+jumbotron = "home-approach-test"
+background = "transperant"
+templates = "template3"
+description_limit = 0
+
+[jumbotron approach_support]
+jumbotron = "home-approach-support"
+background = "transperant"
+templates = "template3"
+description_limit = 0
+==
+<?php
+use Pensoft\Articles\Models\Article;
+use Pensoft\Partners\Models\Partners;
+
+/**
+ * "Bringing together" list + globe pins, built from the Pensoft.Partners
+ * consortium (type 1): one row per country, in partner order, with its
+ * organisations. Acronym = the partner's Title field, role = its
+ * Additional description (e.g. "Project coordinator"). Pin positions come
+ * from country_geo in meta/realise-data.php. Falls back to the design's
+ * static list while the table is empty.
+ */
+function partnerCountries($data)
+{
+    $partners = Partners::with('country')->where('type', 1)->orderBy('nest_left')->get();
+    if (!$partners->count()) {
+        return $data['countries'];
+    }
+
+    $flagDir = themes_path(\Cms\Classes\Theme::getActiveThemeCode() . '/assets/realise/flags/');
+    $countries = [];
+    // Each organisation links to its details on the Partners page (12 per
+    // page, same order): /partners?partners_pager=N#rl-partner-p<ID>.
+    $partnersUrl = $this->pageUrl('partners', [], false);
+    foreach ($partners->values() as $i => $p) {
+        $page = intdiv($i, 12) + 1;
+        $orgUrl = $partnersUrl . ($page > 1 ? '?partners_pager=' . $page : '') . '#rl-partner-p' . $p->id;
+        $codes = $p->country->pluck('code')->all() ?: (array) $p->country_code;
+        foreach ($codes as $iso) {
+            $iso = strtoupper($iso);
+            if (!isset($countries[$iso])) {
+                $model = $p->country->firstWhere('code', $iso);
+                $geo = isset($data['country_geo'][$iso]) ? $data['country_geo'][$iso] : null;
+                $countries[$iso] = [
+                    'id' => strtolower($iso),
+                    'code' => isset($data['country_display'][$iso]) ? $data['country_display'][$iso] : $iso,
+                    'name' => $model ? $model->name : $iso,
+                    'flag' => file_exists($flagDir . strtolower($iso) . '.png') ? $data['asset']('flags/' . strtolower($iso) . '.png') : '',
+                    'lat' => $geo ? $geo[0] : null,
+                    'lon' => $geo ? $geo[1] : null,
+                    'orgs' => [],
+                ];
+            }
+            $org = ['name' => $p->instituion ?: $p->title, 'short' => $p->title ?: $p->instituion, 'url' => $orgUrl];
+            $role = trim(strip_tags($p->add_description));
+            if ($role) {
+                $org['role'] = $role === 'Project coordinator' ? 'Coordinator' : $role;
+            }
+            $countries[$iso]['orgs'][] = $org;
+        }
+    }
+
+    return array_values(array_map(function ($c) {
+        $c['orgShort'] = implode(', ', array_map(function ($o) {
+            return $o['short'] . (isset($o['role']) ? ' · ' . $o['role'] : '');
+        }, $c['orgs']));
+        return $c;
+    }, $countries));
+}
+
+function onStart()
+{
+    $data = include themes_path(\Cms\Classes\Theme::getActiveThemeCode() . '/meta/realise-data.php');
+
+    $this['countries'] = $this->partnerCountries($data);
+
+    $this['news'] = Article::news()
+        ->where('published', 'true')
+        ->where('published_at', '<=', 'now')
+        ->orderBy('published_at', 'desc')
+        ->take(8)
+        ->get();
+
+    // Ticker logos: the consortium from Pensoft.Partners (type 1) once it is
+    // filled in, the design's nine partners until then.
+    // Each logo links to the partner's "Institution url".
+    $partners = Partners::where('type', 1)->orderBy('nest_left')->get()->filter(function ($p) {
+        return (bool) $p->cover;
+    })->map(function ($p) {
+        return [
+            'name' => $p->instituion ?: $p->title,
+            'logo' => $p->cover->getPath(),
+            'url' => trim((string) $p->instituion_url),
+        ];
+    })->values()->all();
+    $this['ticker'] = $partners ?: $data['partners'];
+
+}
+?>
+==
+{# REALISE homepage - Hero, Our approach, Bringing together (globe), Latest news + partner ticker. #}
+
+{# ------------------------------------------------------------------ HERO #}
+<section class="rl-hero" aria-labelledby="hero-heading">
+    <video class="rl-video" data-rl-video src="{{ 'assets/realise/video/hero.mp4'|theme }}" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1"></video>
+    <img class="rl-hero__overlay" src="{{ 'assets/realise/img/hero-overlay.png'|theme }}" alt="" aria-hidden="true">
+    {% partial 'realise/motion-toggle' variant='hero' %}
+    <div class="rl-hero__grid">
+        <div class="rl-hero__main">
+            <div class="rl-hero__title-cell">
+                <h1 class="rl-hero__title" id="hero-heading" data-fade>Transforming European Research Assessment</h1>
+            </div>
+            {% set rl_social_html %}{% partial 'realise/socials' variant='hero' %}{% endset %}
+            {% if rl_social_html|trim %}
+            <div class="rl-hero__social">
+                <div class="rl-hero__social-label">Social media</div>
+                <div class="rl-hero__social-links">{{ rl_social_html|raw }}</div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="rl-hero__side">
+            <div class="rl-hero__lead">
+                <div class="rl-cms">{% component 'hero_lead' %}</div>
+                <a class="rl-btn" href="{{ 'about'|page }}">
+                    {% partial 'realise/roll' text='Learn more' %}<span class="sr-only"> about REALISE</span>
+                    <span class="rl-btn__sq">{% partial 'realise/icon' name='arrow-right' size=16 %}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ---------------------------------------------------------- OUR APPROACH #}
+<section class="rl-band rl-approach-band" aria-labelledby="approach-heading">
+    <div class="rl-wrap">
+        <div class="rl-head">
+            <h2 class="rl-h2" id="approach-heading" data-fade>Our approach</h2>
+            <div class="rl-lead rl-cms">{% component 'approach_intro' %}</div>
+        </div>
+        <div class="rl-approach">
+            {# One card per Jumbotron entry: heading = entry title, icon =
+               entry image (the component's own copy of the image is hidden
+               by CSS), text = entry body via the component. #}
+            {% for alias in ['approach_consolidate', 'approach_test', 'approach_support'] %}
+            {% set entry = attribute(_context, alias) ? attribute(_context, alias).getJumbotron() : null %}
+            {% if entry %}
+            <div class="rl-approach__item">
+                {% if entry.image %}<img src="{{ entry.image.path }}" alt="" aria-hidden="true">{% endif %}
+                <h3 data-fade>{{ entry.title }}</h3>
+                <div class="rl-cms">{% component alias %}</div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# ------------------------------------------------------ BRINGING TOGETHER #}
+<section class="rl-band" aria-labelledby="together-heading">
+    <div class="rl-wrap rl-together">
+        <div class="rl-together__list-col">
+            <div>
+                <h2 class="rl-h2" id="together-heading" data-fade>Bringing together</h2>
+                {% set rl_orgs = 0 %}{% for c in countries %}{% set rl_orgs = rl_orgs + c.orgs|length %}{% endfor %}
+                <p class="rl-together__sub">{{ rl_orgs }} organisations, {{ countries|length }} EU countries</p>
+            </div>
+            <ul class="rl-countries">
+                {% for c in countries %}
+                <li>
+                    <button type="button" class="rl-country" data-rl-country="{{ c.id }}" aria-pressed="false">
+                        <span class="rl-country__code">{{ c.code }}</span>
+                        <span class="rl-country__text">
+                            <span class="rl-country__name">{{ c.name }}</span>
+                            <span class="rl-country__orgs">{{ c.orgShort }}</span>
+                        </span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DAE7FF" stroke-width="2" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="rl-together__globe-col">
+            <div class="rl-globe">
+                <canvas data-rl-globe data-land="{{ 'assets/realise/js/land-110m.json'|theme }}" role="img" aria-label="Globe showing the REALISE partner countries."></canvas>
+                <div class="rl-globe__tip" data-rl-tip aria-hidden="true"></div>
+            </div>
+            {% partial 'realise/motion-toggle' variant='globe' %}
+        </div>
+    </div>
+    <script type="application/json" id="rl-countries">{{ countries|json_encode|raw }}</script>
+    <script src="{{ 'assets/realise/js/topojson-client.min.js'|theme }}" defer></script>
+</section>
+
+{# ----------------------------------------------------------- LATEST NEWS #}
+<section class="rl-band" aria-labelledby="news-heading">
+    <div class="rl-wrap">
+        <div class="rl-head">
+            <h2 class="rl-h2" id="news-heading" data-fade>Latest news</h2>
+            {% if news|length > 3 %}
+            <div style="display:flex;gap:8px">
+                <button type="button" class="rl-sq-btn" data-rl-prev="rl-news-track" aria-label="Previous news" aria-controls="rl-news-track">{% partial 'realise/icon' name='arrow-left' size=18 %}</button>
+                <button type="button" class="rl-sq-btn" data-rl-next="rl-news-track" aria-label="Next news" aria-controls="rl-news-track">{% partial 'realise/icon' name='arrow-right' size=18 %}</button>
+            </div>
+            {% elseif news|length %}
+            <a class="rl-btn" href="{{ 'news'|page({}, false) }}">
+                {% partial 'realise/roll' text='All news' %}
+                <span class="rl-btn__sq">{% partial 'realise/icon' name='arrow-right' size=16 %}</span>
+            </a>
+            {% endif %}
+        </div>
+
+        {% if news|length %}
+        <div class="rl-carousel" id="rl-news-track" data-rl-carousel>
+            {% for record in news %}
+                {% partial 'realise/news-card' record=record fade=true %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="rl-empty">News will follow soon - stay tuned!</p>
+        {% endif %}
+
+        <div class="rl-ticker">
+            <div class="rl-ticker__label"><span>Partners</span>{% partial 'realise/motion-toggle' %}</div>
+            <div class="rl-ticker__viewport">
+                <div class="rl-ticker__track">
+                    {% for pass in 1..2 %}
+                    {% for p in ticker %}
+                    {# Pass 2 is the visual copy that makes the loop seamless:
+                       hidden from assistive tech and out of the tab order, so
+                       each partner is announced and focusable once. #}
+                    {% set dup = pass == 2 %}
+                    <div class="rl-ticker__item" {% if dup %}aria-hidden="true"{% endif %}>
+                        {% if p.url %}
+                        <a class="rl-ticker__link" href="{{ p.url }}" target="_blank" rel="noopener noreferrer" title="{{ p.name }}" {% if dup %}tabindex="-1"{% endif %}>
+                            <img src="{{ p.logo }}" alt="{{ dup ? '' : p.name }}" loading="lazy">{% if not dup %}{% partial 'components/new-tab-hint' %}{% endif %}
+                        </a>
+                        {% else %}
+                        <img src="{{ p.logo }}" alt="{{ dup ? '' : p.name }}" title="{{ p.name }}" loading="lazy">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

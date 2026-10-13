@@ -1,0 +1,17 @@
+{#
+    Pause / play for moving content (WCAG 2.2.2). Every .rl-motion button
+    drives one site-wide state - videos, partner ticker, globe drift - that
+    assets/realise/js/realise.js applies and remembers between pages.
+    variant: 'hero' | 'globe' | '' (inline)
+
+    Currently switched OFF (rl_show_motion_toggle = false): no button is
+    printed, and the motion then follows only the visitor's "reduce motion"
+    system setting. Set it to true to bring the buttons back everywhere.
+#}
+{% set rl_show_motion_toggle = false %}
+{% if rl_show_motion_toggle %}
+<button type="button" class="rl-motion {{ variant ? 'rl-motion--' ~ variant }}" data-rl-motion aria-pressed="false" aria-label="Pause animations">
+    <svg class="rl-motion__pause" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><rect x="2" y="1.5" width="2.6" height="9" rx="0.6" fill="currentColor"/><rect x="7.4" y="1.5" width="2.6" height="9" rx="0.6" fill="currentColor"/></svg>
+    <svg class="rl-motion__play" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 1.6v8.8a.6.6 0 0 0 .9.5l7-4.4a.6.6 0 0 0 0-1L3.9 1.1a.6.6 0 0 0-.9.5z" fill="currentColor"/></svg>
+</button>
+{% endif %}

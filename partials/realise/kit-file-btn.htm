@@ -1,0 +1,23 @@
+{#
+    One Brand Kit download button: primary button in a .rl-kit__btns row.
+
+    file   - System\Models\File
+    name   - item name, for screen readers
+    label  - optional visible label; defaults to the file extension in capitals
+    single - true when it is the item's only file: the visible label is then
+             "Download" (the file type is still read out)
+
+    Screen readers hear e.g. "Download Primary logo, PNG" or, for a single
+    file, "Download Roll-up banner (PDF)".
+#}
+{% set ext = file.getExtension()|lower %}
+{% set label = label|default(ext|upper) %}
+<a class="rl-btn rl-btn--sm rl-btn--block" {% partial 'realise/file-link' file=file %}>
+    {% if single %}
+    {% partial 'realise/roll' text='Download' %}<span class="sr-only"> {{ name }} ({{ label }})</span>
+    {%- else %}
+    <span class="sr-only">Download {{ name }}, </span>{% partial 'realise/roll' text=label %}
+    {%- endif %}
+    {%- if ext in ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'] %}{% partial 'components/new-tab-hint' %}{% endif %}
+    <span class="rl-btn__sq">{% partial 'realise/icon' name='download' %}</span>
+</a>

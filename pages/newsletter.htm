@@ -1,0 +1,50 @@
+url = "/newsletter"
+layout = "default"
+title = "Newsletter"
+meta_description = "Subscribe to the REALISE newsletter to receive the latest results and updates directly in your inbox."
+is_hidden = 0
+robot_index = "index"
+robot_follow = "follow"
+==
+<?php
+function onStart()
+{
+    // "Read past issues" links to the Media Centre Newsletters section - only while it is shown.
+    $data = include themes_path(\Cms\Classes\Theme::getActiveThemeCode() . '/meta/realise-data.php');
+    $this['show_past_issues'] = $data['media_sections']['newsletters'];
+}
+?>
+==
+{#
+    Newsletter sign-up. Every Subscribe button links straight to the theme
+    setting "Subscribe link" (backend: Settings > Front-end theme > General
+    settings) - see partials/realise/subscribe-link.htm. This page is the
+    fallback target while that setting is empty, and links to it once set.
+
+    Not to be confused with pages/newsletters.htm, the issue archive.
+#}
+{% set rl_sub = this.theme.subscribe|default('')|trim %}
+
+{% partial 'realise/page-hero' crumb='Stay informed' title='Newsletter' %}
+
+<section class="rl-band" aria-labelledby="newsletter-form-heading">
+    <div class="rl-wrap rl-split">
+        <div class="rl-split__aside">
+            <h2 id="newsletter-form-heading">Subscribe to our newsletter</h2>
+        </div>
+        <div class="rl-split__body">
+            <p>Regular updates on REALISE research, events and results, a few times a year.</p>
+            {% if rl_sub %}
+            <p>
+                <a class="rl-btn" {% partial 'realise/subscribe-link' %}>
+                    {% partial 'realise/roll' text='Subscribe' %}{% partial 'realise/subscribe-link' hint=true %}
+                    <span class="rl-btn__sq">{% partial 'realise/icon' name='arrow-right' size=16 %}</span>
+                </a>
+            </p>
+            {% else %}
+            <p class="rl-newsletter-soon">The newsletter sign-up form is coming soon. In the meantime, follow REALISE on social media or check the <a href="{{ 'news'|page({}, false) }}">latest news</a>.</p>
+            {% endif %}
+            {% if show_past_issues %}<p><a class="rl-link" href="{{ 'media-center'|page }}#media-news">{% partial 'realise/roll' text='Read past issues' %} {% partial 'realise/icon' name='arrow-right' %}</a></p>{% endif %}
+        </div>
+    </div>
+</section>

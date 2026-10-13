@@ -1,0 +1,73 @@
+url = "/contact"
+layout = "default"
+title = "Contact"
+is_hidden = 0
+robot_index = "index"
+robot_follow = "follow"
+
+[siteSearchInclude]
+
+[SimpleContactFormComponent]
+templates = "template4"
+recaptcha_key = "6LfL8IQrAAAAABk9Ma2CDNANxPLJ5IDL494Rlg7A"
+message_label = "Your question or comment"
+==
+<?php
+use Pensoft\Cardprofiles\Models\Profiles;
+
+function onStart()
+{
+    // Contacts are Pensoft.Cardprofiles profiles in the "Contacts" category
+    // (slug "contacts"), in backend order; until there are any, the design's
+    // coordinator and project manager.
+    $category = \Pensoft\Cardprofiles\Models\Category::where('slug', 'contacts')->first();
+    $profiles = $category
+        ? Profiles::where('category_id', $category->id)->orderBy('sort_order')->get()
+        : collect();
+    if ($profiles->count()) {
+        $this['contacts'] = $profiles->map(function ($p) {
+            return [
+                'name' => $p->names,
+                'role' => $p->position,
+                'email' => $p->email,
+                'photo' => $p->avatar ? $p->avatar->getThumb(320, 320, ['mode' => 'crop']) : null,
+            ];
+        })->all();
+    } else {
+        $data = include themes_path(\Cms\Classes\Theme::getActiveThemeCode() . '/meta/realise-data.php');
+        $this['contacts'] = $data['contacts'];
+    }
+}
+?>
+==
+{% component 'siteSearchInclude' %}
+
+{% partial 'realise/page-hero' crumb='Get in touch' title='Contact' %}
+
+<section class="rl-band" aria-label="Project contacts">
+    <div class="rl-wrap rl-wrap--open-right rl-contacts">
+        {% for c in contacts %}
+        <article class="rl-contact">
+            {% if c.photo %}<img src="{{ c.photo }}" alt="" width="160" height="160">{% endif %}
+            <div>
+                {% if c.role %}<span class="rl-eyebrow">{{ c.role }}</span>{% endif %}
+                <h2>{{ c.name }}</h2>
+                {% if c.email %}
+                <a href="mailto:{{ c.email }}">{% partial 'realise/icon' name='mail' size=16 %}{{ c.email }}</a>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+{# Only shown when the contact-form component actually renders a form. #}
+{% set rl_form %}{% component 'SimpleContactFormComponent' %}{% endset %}
+{% if rl_form|trim %}
+<section class="rl-band" aria-labelledby="contact-form-heading">
+    <div class="rl-wrap rl-split">
+        <div class="rl-split__aside"><h2 id="contact-form-heading">Send us a message</h2></div>
+        <div class="rl-split__body rl-contact-form">{{ rl_form|raw }}</div>
+    </div>
+</section>
+{% endif %}

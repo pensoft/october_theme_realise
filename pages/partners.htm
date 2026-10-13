@@ -1,0 +1,104 @@
+url = "/partners"
+layout = "default"
+title = "Partners"
+is_hidden = 0
+robot_index = "index"
+robot_follow = "follow"
+==
+<?php
+use Pensoft\Partners\Models\Partners;
+use Pensoft\Cardprofiles\Models\Profiles;
+
+function onStart()
+{
+    $data = include themes_path(\Cms\Classes\Theme::getActiveThemeCode() . '/meta/realise-data.php');
+
+    // Consortium from Pensoft.Partners (type 1); the design's nine partners
+    // until the table is filled in.
+    // 12 per page, in backend order; the pager only shows past 12.
+    $rows = Partners::where('type', 1)->orderBy('nest_left')->paginate(12);
+    $this['partners_pager'] = $rows;
+    if ($rows->total()) {
+        $heights = $data['logo_heights'];
+        // Drawer "Team": Pensoft.Cardprofiles profiles in the "Partner
+        // members" category (slug partner-members), linked to the partner.
+        $membersCat = \Pensoft\Cardprofiles\Models\Category::where('slug', 'partner-members')->first();
+        $this['partners'] = $rows->getCollection()->map(function ($p) use ($heights, $membersCat) {
+            return [
+                'id' => 'p' . $p->id,
+                'name' => $p->instituion ?: $p->title,
+                'logo' => $p->cover ? $p->cover->getPath() : null,
+                'logo_h' => isset($heights[strtoupper($p->title)]) ? $heights[strtoupper($p->title)] : '64px',
+                'content' => $p->content,
+                // "Additional description" (rich text): the drawer's "Involvement in REALISE".
+                // Plain text (no paragraph markup) is wrapped in <p> so it reads like the description.
+                'involvement' => trim(strip_tags((string) $p->add_description, '<img><iframe>')) === '' ? null
+                    : (preg_match('/^\s*<(p|ul|ol|div|h[1-6]|table|blockquote)\b/i', $p->add_description) ? $p->add_description : '<p>' . $p->add_description . '</p>'),
+                'url' => $p->instituion_url,
+                'members' => $membersCat
+                    ? Profiles::where('partner_id', $p->id)->where('category_id', $membersCat->id)->orderBy('sort_order')->get()
+                    : collect(),
+            ];
+        })->all();
+    } else {
+        $this['partners'] = $data['partners'];
+        $this['partners_pager'] = null;
+    }
+}
+?>
+==
+{% partial 'realise/page-hero' parent={ title: 'About', url: 'about'|page } crumb='Partners' title='Partners' %}
+
+<section class="rl-band" id="partners-list" aria-label="Consortium partners">
+    <div class="rl-wrap rl-wrap--open-right">
+        <ul class="rl-partners" style="list-style:none;margin:0;padding:0">
+            {% for p in partners %}
+            <li style="display:flex">
+                <button type="button" class="rl-partner" style="width:100%" data-rl-dialog="rl-partner-{{ p.id }}" aria-haspopup="dialog">
+                    <span class="rl-partner__logo">
+                        {% if p.logo %}<img src="{{ p.logo }}" alt="" style="max-height:{{ p.logo_h }}" loading="lazy">{% endif %}
+                    </span>
+                    <span class="rl-partner__name">{{ p.name }}</span>
+                    <span class="rl-partner__more">{% partial 'realise/roll' text='Read more' %}<span class="sr-only">: {{ p.name }}</span> {% partial 'realise/icon' name='arrow-right' %}</span>
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+        <div style="border-right:1px solid var(--rl-line)">{% partial 'realise/pager' p=partners_pager label='Partner pages' hash='partners-list' %}</div>
+    </div>
+
+    {% for p in partners %}
+    <dialog class="rl-drawer" id="rl-partner-{{ p.id }}" aria-labelledby="rl-partner-{{ p.id }}-title">
+        <div class="rl-drawer__head">
+            <button type="button" class="rl-drawer__close" data-rl-close aria-label="Close {{ p.name }} details">{% partial 'realise/icon' name='close' size=16 %}</button>
+        </div>
+        <div class="rl-drawer__body">
+            {% if p.logo %}<div class="rl-drawer__logo"><img src="{{ p.logo }}" alt=""></div>{% endif %}
+            <h2 id="rl-partner-{{ p.id }}-title">{{ p.name }}</h2>
+            <div class="rl-drawer__text">{{ p.content|raw }}</div>
+            {% if p.involvement %}
+            <div class="rl-drawer__involvement">
+                <h3 class="rl-eyebrow" id="rl-partner-{{ p.id }}-involvement">Involvement in REALISE</h3>
+                <div class="rl-drawer__text">{{ p.involvement|raw }}</div>
+            </div>
+            {% endif %}
+            {% if p.members|length %}
+            <div class="rl-drawer__members">
+                <span class="rl-eyebrow">Team</span>
+                {% for m in p.members %}
+                <div class="rl-member">
+                    {% if m.avatar %}<img src="{{ m.avatar.getThumb(112, 112, { mode: 'crop' }) }}" alt="">{% endif %}
+                    {# Short description: the profile's Description field (Pensoft.Cardprofiles), as plain text. #}
+                    {% set m_desc = m.content|striptags|replace({'&nbsp;': ' '})|trim %}
+                    <div><b>{{ m.names }}</b>{% if m_desc %}<span class="rl-member__desc">{{ m_desc|raw }}</span>{% endif %}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if p.url %}
+            <a class="rl-link" href="{{ p.url }}" target="_blank" rel="noopener noreferrer">{% partial 'realise/roll' text='Visit website' %}<span class="sr-only">: {{ p.name }} (opens in a new tab)</span> {% partial 'realise/icon' name='external' %}</a>
+            {% endif %}
+        </div>
+    </dialog>
+    {% endfor %}
+</section>

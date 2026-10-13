@@ -1,0 +1,166 @@
+/**
+	SVG map
+*/
+
+.fill_default:hover
+{
+    opacity:0.8;
+    cursor:pointer;
+}
+
+rect, circle, g{
+    &:focus, &:focus-within, &:active{
+        outline: none;
+        border: none;
+    }
+
+}
+
+.tooltiptext {
+    display: none;
+    width: fit-content;
+    position: fixed;
+    z-index: 1;
+    padding: 10px 15px;
+    color: #000;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 120%; /* 24px */
+    letter-spacing: -0.6px;
+    border-radius: 12px;
+    background: #FFF;
+    box-shadow: 0px 0px 32px 0px rgba(0, 0, 0, 0.07);
+
+    .tooltip_flag_container{
+        display: flex;
+        align-items: center;
+    }
+
+    i{
+        width: 47px;
+        height: 34px;
+        border-radius: 7px;
+        margin-right: 14px;
+        display: inline-flex;
+        &.sogndal{ //sweden
+            background: url("../../assets/images/Flag_of_Norway.svg") center no-repeat;
+            background-size: cover;
+        }
+
+        &.gdansk{
+            background: url("../../assets/images/Flag_of_Poland.svg") center no-repeat;
+            background-size: cover;
+        }
+
+        &.riga{
+            background: url("../../assets/images/Flag_of_Latvia.svg") center no-repeat;
+            background-size: cover;
+        }
+
+        &.lappeenranta{
+            background: url("../../assets/images/Flag_of_Finland.svg") center no-repeat;
+            background-size: cover;
+        }
+
+        //partners logo in tooltip
+        &.rig{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/Stradini.svg") center no-repeat;
+            background-size: auto;
+            margin: 0;
+        }
+        &.lut{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/LUT.svg") center no-repeat;
+            background-size: contain;
+            margin: 0;
+        }
+        &.ktu{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/KTU.svg") center no-repeat;
+            background-size: contain;
+            margin: 0;
+        }
+        &.imp{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/imp.svg") center no-repeat;
+            background-size: auto;
+            margin: 0;
+        }
+        &.ug{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/uni-greifswald.svg") center no-repeat;
+            background-size: auto;
+            margin: 0;
+        }
+        &.wnri{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/viest.svg") center no-repeat;
+            background-size: auto;
+            margin: 0;
+        }
+        &.jyu{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/jyu.svg") center no-repeat;
+            background-size: auto;
+            margin: 0;
+        }
+        &.uniba{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/ukv.svg") center no-repeat;
+            background-size: auto;
+            margin: 0;
+        }
+        &.pensoft{
+            width: 230px;
+            max-width: 100%;
+            height: 70px;
+            background: url("../../../../storage/app/media/partners/pensoft.svg") center no-repeat;
+            background-size: auto;
+            margin: 0;
+        }
+    }
+}
+
+.tooltiptext.active {
+    display: initial;
+}
+
+.pulse{
+}
+
+.blink{
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+.case-studies{
+    svg{
+        .breakpoint-large-down({
+            width: 100%;
+            height: auto;
+        });
+    }
+}

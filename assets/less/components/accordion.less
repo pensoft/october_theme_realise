@@ -1,0 +1,288 @@
+.ui-state-active, .ui-state-focus, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+
+    padding: 0!important;
+    background: none!important;
+    border: none!important;
+    color: @dark-color!important;
+}
+
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+    border: 0px solid #232323 !important;
+    background: white !important;
+    font-weight: normal !important;
+    color: #ffffff !important;
+    .breakpoint-large-down({
+        border: 0px solid #232323 !important;
+        background: white !important;
+        font-weight: normal !important;
+        color: #ffffff !important;
+    });
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default, .ui-button, html .ui-button.ui-state-disabled:hover, html .ui-button.ui-state-disabled:active {
+    border: none!important;
+    background: none!important;
+    font-weight: normal;
+    color: unset!important;
+}
+
+.ui-accordion .ui-accordion-content {
+    padding: 0;
+    border-top: 0;
+    overflow: unset!important;
+    height: unset!important;
+}
+
+.ui-accordion .ui-accordion-header {
+    display: block!important;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    margin: 0!important;
+    padding: 0 1rem 0 0!important;
+    font-size: 100%;
+    outline: none;
+    .breakpoint-large-down({
+        padding: 0!important;
+        text-align: left!important;
+        width: 100%;
+    });
+}
+
+.ui-accordion .ui-accordion-content {
+    padding: 0 0 0 1rem!important;
+    border-top: 0;
+    overflow: unset!important;
+    .breakpoint-large-down({
+        padding: 0!important;
+        text-align: left!important;
+    });
+}
+
+
+.ui-icon {
+    display: none!important;
+}
+
+.ui-widget {
+    font-size: 1em;
+}
+
+.ui-widget div{
+
+}
+
+.ui-state-active{
+    border: none !important;
+    background: none!important;
+    font-weight: normal !important;
+    color: unset !important;
+}
+
+/*------------------------*/
+
+.work_packages h2.underline{
+    display: none;
+}
+
+
+.ui-icon {
+    &.small, &.large, &.huge {
+        .line-height;
+        vertical-align: middle;
+    }
+    &.small {
+        .font-size(0.80);
+    }
+    &.normal {
+        font-size: 20px;
+        float: left;
+        margin-right: 5px;
+        height: 20px;
+    }
+    &.big {
+        .font-size(2);
+    }
+    &.large {
+        .font-size(3);
+    }
+    &.huge {
+        .font-size(5);
+    }
+}
+
+
+
+.work_packages{
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    .col-md-6:nth-of-type(1){
+        padding: 0!important;
+    }
+}
+
+.work_packages .accordion-border{
+    border: none;
+    padding: 0px;
+
+    font-size: 1em;
+    cursor: pointer;
+    background: #f5f8fa;
+    border-radius: 10px;
+    width: 70%;
+    margin: 11px auto;
+
+    .breakpoint-large-down({
+        width: 100%;
+    });
+
+
+    .col-xs-12{
+        height: -webkit-fill-available;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .accordion_contaner, .col-md-10.col-xs-12{
+        padding: 0 0 0 40px!important;
+        .accordion_title{
+            .breakpoint-large-down({
+                text-align: center;
+            });
+        }
+    }
+}
+
+.work_packages .accordion-toggle{
+    background: none;
+    border: none;
+    border-radius: unset;
+    padding: 0;
+    color: #0A3951;
+    font-size: 18px;
+    font-weight: 500;
+    position: relative;
+
+    .accordion_contaner{
+        padding: 0 0 0 40px!important;
+        .accordion_title{
+            .breakpoint-large-down({
+                text-align: center;
+            });
+        }
+    }
+
+}
+
+// The keyboard control inside .plusminus - stripped back to look exactly like
+// the span it replaced.
+.work_packages .accordion-trigger{
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
+.work_packages .accordion-content{
+    padding: 20px 0 0 0;
+    line-height: 1.5em!important;
+    color: @primary-color;
+    ol{
+        list-style-type: decimal;
+        padding-left: 40px;
+    }
+
+    ul{
+        margin-bottom: 40px;
+        font-weight: 300;
+    }
+}
+
+//
+//.work_packages .accordion-content p{
+//    .breakpoint-large-down({
+//        padding: 0!important;
+//        text-align: left!important;
+//        color: @dark-color;
+//    });
+//}
+
+.work_packages .plusminus{
+    color: @link-color;
+    position: relative;
+    max-width: fit-content;
+    padding-right: 22px;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    letter-spacing: -0.48px;
+
+    .breakpoint-large-down({
+        margin: 0 auto;
+    });
+    &:after{
+        position: absolute;
+        right: 0;
+        top: 2px;
+        width: 17px;
+        height: 17px;
+        content: '';
+        transition: all 0.3s ease-in-out;
+        background: url("../../assets/images/arrow-wp.svg") right center no-repeat;
+        background-size: 13px;
+
+    }
+    &:hover{
+        &:after{
+            transform:rotate(180deg);
+        }
+    }
+}
+
+
+.work_packages .col-xs-2:has(.green_bullet){
+    height: -webkit-fill-available;
+}
+.work_packages .green_bullet{
+    color: white;
+    width: 148px;
+
+    height: 100%;
+    min-height: 129px;
+    background: url("../../assets/images/WP.png") center no-repeat;
+    background-size: cover;
+    border-radius: 10px;
+    //background: linear-gradient(241deg, rgba(6, 34, 60, 0.18) 0%, rgba(255, 60, 0, 0.36) 100%), url(<path-to-image>) lightgray 50% / cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    font-size: 38px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 120%; /* 45.6px */
+    letter-spacing: -1.52px;
+    transition: all ease-in-out 0.3s;
+    .breakpoint-large-down({
+        margin: 0 auto 20px auto;
+    });
+}
+
+
+

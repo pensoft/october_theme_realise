@@ -1,0 +1,207 @@
+// ===========================================================================
+//  Base tokens for the shared Pensoft component stylesheets (theme.less).
+//  ---------------------------------------------------------------------------
+//  These only feed the plugin-markup styles (grid, jumbotron, library, forms);
+//  the REALISE look - colours, type, layout - lives in
+//  assets/realise/css/realise.css, which is loaded after theme.less.
+//  Everything below the "Legacy" divider is kept because the older
+//  component/page stylesheets still reference those names.
+// ===========================================================================
+
+// -- Brand ------------------------------------------------------------------
+@base-ink:              #05041D;  // primary text
+@base-black:            #000102;  // dark sections + footer
+@base-hero-black:       #0b0f14;  // hero image backstop
+@base-footer-bg:        @base-ink;  // footer - the canvas moved it off @base-black
+@base-white:            #ffffff;
+
+@base-orange:           #FF8E3E;  // primary action
+@base-orange-hover:     #F18233;
+@base-orange-link:      #E0742A;  // body-copy link hover on light
+@base-orange-bright:    #FF954A;  // nav / footer link hover on dark
+
+@base-pill-gradient:    linear-gradient(90deg, #FF8E3E 0%, #74B683 54%, #BBFFB3 100%);
+
+// -- Ink alphas (light surfaces) --------------------------------------------
+@base-ink-86:           rgba(5, 4, 29, 0.86);
+@base-ink-78:           rgba(5, 4, 29, 0.78);
+@base-ink-72:           rgba(5, 4, 29, 0.72);
+@base-ink-70:           rgba(5, 4, 29, 0.70);
+@base-ink-65:           rgba(5, 4, 29, 0.65);
+@base-ink-62:           rgba(5, 4, 29, 0.62);
+@base-ink-40:           rgba(5, 4, 29, 0.40);
+@base-ink-25:           rgba(5, 4, 29, 0.25);
+@base-ink-18:           rgba(5, 4, 29, 0.18);
+@base-ink-12:           rgba(5, 4, 29, 0.12);
+@base-ink-06:           rgba(5, 4, 29, 0.06);
+
+// -- White alphas (dark surfaces) -------------------------------------------
+@base-on-dark-92:       rgba(255, 255, 255, 0.92);
+@base-on-dark-90:       rgba(255, 255, 255, 0.90);
+@base-on-dark-88:       rgba(255, 255, 255, 0.88);
+@base-on-dark-86:       rgba(255, 255, 255, 0.86);
+@base-on-dark-78:       rgba(255, 255, 255, 0.78);
+@base-on-dark-62:       rgba(255, 255, 255, 0.62);
+@base-on-dark-60:       rgba(255, 255, 255, 0.60);
+@base-on-dark-55:       rgba(255, 255, 255, 0.55);
+@base-on-dark-50:       rgba(255, 255, 255, 0.50);
+@base-on-dark-42:       rgba(255, 255, 255, 0.42);
+@base-on-dark-32:       rgba(255, 255, 255, 0.32);
+@base-on-dark-22:       rgba(255, 255, 255, 0.22);
+@base-on-dark-16:       rgba(255, 255, 255, 0.16);
+@base-on-dark-12:       rgba(255, 255, 255, 0.12);
+@base-on-dark-10:       rgba(255, 255, 255, 0.10);
+@base-on-dark-05:       rgba(255, 255, 255, 0.05);
+@base-on-dark-label:    #A1A1A1;  // footer column headings
+
+// -- Hairlines --------------------------------------------------------------
+@base-line:             #E2E2E2;  // card borders
+@base-line-soft:        #E1E0E3;  // in-card dividers
+@base-line-faint:       #EFEFEF;  // arrow-button borders
+@base-line-modal:       #ECECEC;
+@base-line-rule:        #E9E9E9;
+
+// -- Typography -------------------------------------------------------------
+@base-font-display:     'Mona Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+@base-font-body:        'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+@base-hero-size:        75px;   @base-hero-lh:      76px;   @base-hero-ls:  -2px;
+@base-h1-size:          52px;   @base-h1-lh:        56px;   @base-h1-ls:    -1.4px;
+@base-section-size:     52px;   @base-section-lh:   54.6px; @base-section-ls: -0.8px;
+@base-h2-size:          28px;   @base-h2-lh:        34px;
+@base-card-title-size:  29px;   @base-card-title-lh: 31.9px;
+@base-lead-size:        21px;   @base-lead-lh:      34px;
+@base-body-size:        16.5px; @base-body-lh:      30px;
+@base-copy-size:        16px;   @base-copy-lh:      25.6px;
+@base-small-size:       14.5px; @base-small-lh:     23.2px;
+@base-label-size:       13px;
+@base-eyebrow-size:     11px;   @base-eyebrow-ls:   1.54px;
+
+// -- Radii ------------------------------------------------------------------
+@base-radius-xs:        6px;
+@base-radius-sm:        8px;
+@base-radius:           10px;
+@base-radius-md:        12px;
+@base-radius-lg:        14px;
+@base-radius-xl:        16px;
+@base-radius-pill:      20px;
+
+// -- Rhythm -----------------------------------------------------------------
+@base-container:        1292px;   // inner max-width of every section
+@base-gutter:           74px;     // section side padding (desktop)
+@base-gutter-md:        40px;
+@base-gutter-sm:        20px;
+@base-section-gap:      130px;    // vertical space between light sections
+@base-section-gap-dark: 170px;
+@base-banner-h:         36px;     // announcement ticker above the header
+@base-header-h:         72px;     // floating header card
+@base-header-h-sm:      62px;
+@base-header-top:       28px;     // gap between the ticker and the card
+@base-header-top-sm:    12px;
+
+// -- Motion -----------------------------------------------------------------
+@base-ease:             cubic-bezier(0.22, 1, 0.36, 1);
+@base-speed:            .22s;
+@base-speed-slow:       .32s;
+
+
+// ===========================================================================
+//  Legacy variables
+//  Names kept so the pre-existing component/page stylesheets still compile;
+//  values now point at the base tokens above. The `!important` suffixes
+//  are part of the original values (they are interpolated into declarations),
+//  so they have to stay.
+// ===========================================================================
+
+@text-color-default: @base-ink-65;
+@padding-base-space: 10px;
+@margin-base-space:20px;
+
+@padding-base-space-home: 15px;
+@margin-base-space-home: 0px;
+
+@margin-list-space:50px;
+@heading-space:100px;
+@rounded-base: @base-radius-sm;
+@opacity-base: 65;
+@border-line-width: 1px;
+@border-line-style: solid;
+
+
+
+@zindex-dropdown:          1000;
+@zindex-sticky:            1020;
+@zindex-fixed:             9999;
+@zindex-modal-backdrop:    1040;
+@zindex-modal:             1050;
+@zindex-popover:           1060;
+@zindex-tooltip:           1070;
+
+@breakpoint-small-min-width: 576px;
+@breakpoint-medium-min-width: 768px;
+@breakpoint-large-min-width: 992px;
+@breakpoint-huge-min-width: 1200px;
+
+@breakpoint-small-max-width:575.98px;
+@breakpoint-medium-max-width:767.98px;
+@breakpoint-large-max-width:991.98px;
+@breakpoint-huge-max-width:1299.98px;
+@breakpoint-laptop-max-width:1370.98px;
+@breakpoint-screen-max-width:1590.98px;
+
+@primary-color:#FF8E3E!important;
+@secondary-color: #000102!important;
+@secondary-btn-color: #05041D!important;
+@success-color: #74B683!important;
+@link-color: #FF8E3E !important;
+@danger-color: #dc3545!important;
+@warning-color: #ffc107!important;
+@info-color: #A1A1A1!important;
+@light-color: #F6F6F7!important;
+@dark-color: #05041D!important;
+@yellow-color: #FF954A!important;
+@blue-color: #05041D!important;
+@green-color: #74B683!important;
+@footer-color: #000102!important;
+//@muted-color: #6c757d!important;
+
+@white-color: #ffffff!important;
+@transparent: rgba(0,0,0,0);
+@default-color: @dark-color;
+@muted-color: @default-color!important;
+@black-color: #000102;
+@border-color: #E2E2E2;
+@grey-color: #A1A1A1;
+@grey-btn-search-color: #05041D;
+@navbar-scrolled-color: #000102;
+@navbar-color: #05041D;
+
+@header-text-color: #FFFFFF;
+@body-text-color: #05041D;
+@heading-text-color: #05041D;
+@date-text-color: #FF8E3E;
+@link-text-color: #FF8E3E;
+@button-text-color: #FFFFFF;
+@button-background-color: #FF8E3E;
+
+@footer-text-color: #ffffff;
+// Components
+
+// Navbar
+@nav-link-active-color: #FF954A!important;
+@navbar-bkg-hover-color: #000102 !important;
+@navbar-dark-color: @black-color !important;
+@navbar-bkg-color: @navbar-scrolled-color !important;
+@navbar-font-color: #fff !important;
+@navbar-light-bkg-color: @white-color !important;
+
+// List
+@list-item-hover: #FF954A !important;
+
+
+// END Components
+
+// Theme
+
+// footer
+@footer-bkg-color: #000102!important;

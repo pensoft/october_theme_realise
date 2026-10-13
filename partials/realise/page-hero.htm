@@ -1,0 +1,27 @@
+{#
+    Inner-page hero: the site video under a navy scrim, an eyebrow / crumb
+    and the page H1.
+
+    crumb   - eyebrow text ("About", "Resources")
+    parent  - optional {title, url}: renders "parent / crumb" with a link
+    title   - the H1
+    heading - pass false when the page renders its own H1; the title is
+              then a visually identical <p> so the page keeps one H1
+#}
+<section class="rl-page-hero">
+    <video class="rl-video" data-rl-video src="{{ 'assets/realise/video/hero.mp4'|theme }}" autoplay muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1"></video>
+    <div class="rl-page-hero__scrim"></div>
+    {% partial 'realise/motion-toggle' variant='hero' %}
+    <div class="rl-page-hero__inner">
+        {% if crumb or parent %}
+        <span class="rl-crumb">
+            {% if parent %}<a href="{{ parent.url }}">{{ parent.title }}</a> / {% endif %}{{ crumb }}
+        </span>
+        {% endif %}
+        {% if heading is defined and heading == false %}
+        <p class="rl-page-title">{{ title }}</p>
+        {% else %}
+        <h1 class="rl-page-title" id="page-title">{{ title }}</h1>
+        {% endif %}
+    </div>
+</section>

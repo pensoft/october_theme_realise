@@ -1,0 +1,84 @@
+[menu]
+start = 1
+activeNode = 0
+numberOfLevels = 2
+
+[localePicker]
+forceUrl = 0
+==
+<?php
+use BenFreke\MenuManager\Models\Menu;
+
+function onStart()
+{
+    // The nav is the children of a top-level Menu Manager menu. Prefer the
+    // one titled "Main menu"; otherwise take the first top-level menu, so
+    // the header does not depend on a database id.
+    $root = Menu::whereNull('parent_id')->where('title', 'Main menu')->first()
+        ?: Menu::whereNull('parent_id')->orderBy('nest_left')->first();
+
+    $this['rl_menu_start'] = $root ? 'id-' . $root->id : null;
+}
+?>
+==
+{#
+    REALISE header - sticky navy bar with blur, logo, uppercase nav.
+
+    Navigation comes from Menu Manager (backend > Menu Manager): the
+    children of the "Main menu" root are the top-level links, and their
+    children are the dropdowns. The markup is the theme override
+    partials/menu/default.htm.
+
+    id="headernavbar" is kept because assets/js/app.js reads its height.
+    Dropdowns open on hover (CSS) and on click/Enter (assets/realise/js/realise.js),
+    which also drives the mobile burger.
+#}
+{% set rl_logo = this.theme.site_logo ? this.theme.site_logo.getPath() : ('assets/realise/img/realise-logo.png'|theme) %}
+
+<header class="rl-header" id="headernavbar" data-rl-header>
+    <div class="rl-header__inner">
+        <a href="{{ 'home'|page }}" class="rl-header__brand" aria-label="{{ site_name|default('REALISE') }} - home">
+            <img src="{{ rl_logo }}" alt="{{ site_name|default('REALISE') }}" width="146" height="34">
+        </a>
+
+        {% if rl_menu_start %}
+        <nav class="rl-nav" id="rl-nav" aria-label="Main navigation">
+            {% component 'menu' start=rl_menu_start %}
+        </nav>
+        {% endif %}
+
+        <div class="rl-header__actions">
+            {# Without JS this is a plain link to the search page. #}
+            <a class="rl-search-btn" href="{{ 'search'|page({}, false) }}" data-rl-search-open role="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="rl-search" aria-label="Search">
+                {% partial 'realise/icon' name='search' size=18 %}
+            </a>
+            {% if rl_menu_start %}
+            <button type="button" class="rl-burger" data-rl-burger aria-expanded="false" aria-controls="rl-nav" aria-label="Open menu">
+                {% partial 'realise/icon' name='menu' size=20 %}
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+{# Search popup (assets/realise/js/realise.js, initSearch): live top results
+   from /search?format=json while typing; Enter opens the full results page. #}
+<dialog class="rl-search" id="rl-search" aria-labelledby="rl-search-title">
+    <div class="rl-search__panel">
+        <div class="rl-search__head">
+            <p class="rl-search__title" id="rl-search-title">Search the website</p>
+            <button type="button" class="rl-search__close" data-rl-search-close aria-label="Close search">{% partial 'realise/icon' name='close' size=18 %}</button>
+        </div>
+        <form class="rl-search__form" action="{{ 'search'|page({}, false) }}" method="get" role="search" aria-label="Site">
+            <label for="rl-search-input" class="sr-only">Search for</label>
+            <button type="submit" class="rl-search__icon" aria-label="Search">{% partial 'realise/icon' name='search' size=22 %}</button>
+            <input id="rl-search-input" class="rl-search__input" type="search" name="q" placeholder="Search news, events, publications..." autocomplete="off" enterkeyhint="search" aria-describedby="rl-search-help">
+        </form>
+        <p class="rl-search__status" data-rl-search-status role="status" aria-live="polite"></p>
+        <ul class="rl-search__results" data-rl-search-results></ul>
+        <div class="rl-search__foot">
+            <span id="rl-search-help" class="rl-search__help">Press Enter to see all results, Escape to close.</span>
+            <a class="rl-link rl-search__all" href="{{ 'search'|page({}, false) }}" data-rl-search-all hidden>{% partial 'realise/roll' text='See all results' %}<span class="sr-only"> (</span><span data-rl-search-count class="sr-only"></span><span class="sr-only">)</span> {% partial 'realise/icon' name='arrow-right' %}</a>
+        </div>
+    </div>
+</dialog>

@@ -1,0 +1,23 @@
+{# One row on the Events page. entry = Pensoft\Calendar\Models\Entry #}
+{% set url = entry.url ?: ('events'|page({ slug: entry.slug })) %}
+{% set desc = entry.description|striptags|trim %}
+<article class="rl-event">
+    <div class="rl-event__date">
+        <time class="rl-event__day" datetime="{{ entry.start|date('Y-m-d') }}">{{ entry.start|date('d') }}</time>
+        <span class="rl-event__month">{{ entry.start|date('M Y') }}</span>
+    </div>
+    <div class="rl-event__body">
+        <div class="rl-event__tags">
+            {% if entry.categories|length %}<span class="rl-pill">{{ entry.categories.first.title }}</span>{% endif %}
+            {% if entry.place %}<span class="rl-event__place">{{ entry.place }}</span>{% endif %}
+        </div>
+        <h3>{{ entry.title|striptags }}</h3>
+        {% if desc %}<p class="rl-event__desc">{{ desc|length > 220 ? desc|slice(0, 220) ~ '...' : desc }}</p>{% endif %}
+    </div>
+    <div class="rl-event__cta">
+        <a class="rl-btn rl-btn--sm" href="{{ url }}" {% if entry.url %}target="_blank" rel="noopener noreferrer"{% endif %}>
+            {% partial 'realise/roll' text='View event' %}<span class="sr-only">: {{ entry.title|striptags }}</span>{% if entry.url %}{% partial 'components/new-tab-hint' %}{% endif %}
+            <span class="rl-btn__sq">{% partial 'realise/icon' name='arrow-right' %}</span>
+        </a>
+    </div>
+</article>

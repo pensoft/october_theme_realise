@@ -1,0 +1,130 @@
+url = "/publications/:tab?"
+layout = "default"
+title = "Library"
+is_hidden = 0
+robot_index = "index"
+robot_follow = "follow"
+
+[LibraryPage]
+templates = "template5"
+has_search = 1
+milestones_filter = 1
+add_file_name = 1
+no_records_message = "Items will follow soon. Keep posted!"
+redirect_to_download_page = 1
+==
+<?php
+/*
+ * Clean library URLs:
+ *   /publications                                   all documents
+ *   /publications/<tab>                             one tab (see $tabs)
+ *   /publications/<tab>?sort=title-asc&search=...   non-default sort / search
+ *
+ * The LibraryPage component (Pensoft.Library) reads type, Filter[sort] and
+ * search from the request, so the clean URL is translated into those before
+ * the component runs (page onStart runs first). The old form -
+ * ?type=4&Filter[sort]=title+asc&search= - redirects (301) to the clean URL.
+ * The tab / sort / search controls navigate to clean URLs via
+ * assets/realise/js/realise.js (data-rl-library below).
+ */
+function libraryTabs()
+{
+    return [
+        'deliverables' => 1,
+        'relevant-publications' => 2,
+        'realise-publications' => 3,
+        'deliverables-milestones' => 4,
+        'features' => 5,
+        'technical-briefs' => 6,
+        'graphical-summaries' => 7,
+    ];
+}
+
+function librarySorts()
+{
+    return ['title-asc' => 'title asc', 'title-desc' => 'title desc', 'year-desc' => 'year desc', 'year-asc' => 'year asc'];
+}
+// Default order: title (alphabetical) for Deliverables (1), Deliverables & Milestones (4)
+// and the numbered policy briefs (6, "Technical briefs" tab); latest year first otherwise.
+function libraryDefaultSort($type)
+{
+    return in_array((string) $type, ['1', '4', '6'], true) ? 'title asc' : 'year desc';
+}
+
+function libraryUrl($type, $sort, $search, $page = null)
+{
+    $slug = array_search((int) $type, $this->libraryTabs(), true);
+    $url = $this->pageUrl('library', [], false) . ($slug ? '/' . $slug : '');
+    $query = [];
+    if ($sort && $sort !== $this->libraryDefaultSort($type)) {
+        $query['sort'] = array_search($sort, $this->librarySorts(), true) ?: null;
+    }
+    if (trim((string) $search) !== '') {
+        $query['search'] = trim($search);
+    }
+    if ((int) $page > 1) {
+        $query['page'] = (int) $page;
+    }
+    $query = array_filter($query);
+    return $url . ($query ? '?' . http_build_query($query) : '');
+}
+
+// <title>: "<tab> - Library" on a tab (set before the layout's SEO
+// component reads the page title).
+function onInit()
+{
+    $labels = [
+        'deliverables' => 'Deliverables', 'relevant-publications' => 'Relevant Publications',
+        'realise-publications' => 'REALISE Publications', 'deliverables-milestones' => 'Deliverables & Milestones',
+        'features' => 'Features', 'technical-briefs' => 'Technical briefs', 'graphical-summaries' => 'Graphical summaries',
+    ];
+    $tab = $this->param('tab');
+    if ($tab && isset($labels[$tab])) {
+        $this->page->title = $labels[$tab] . ' - ' . $this->page->title;
+    }
+}
+
+function onStart()
+{
+    $tabs = $this->libraryTabs();
+    $sorts = $this->librarySorts();
+
+    // Old query-string URLs -> clean URL.
+    if (input('type') !== null || input('Filter') !== null) {
+        $type = (int) input('type', 0);
+        $sort = (string) input('Filter.sort', '');
+        return Redirect::to($this->libraryUrl($type, $sort, input('search'), input('page')), 301);
+    }
+
+    $tab = $this->param('tab');
+    if ($tab && !isset($tabs[$tab])) {
+        return Redirect::to($this->pageUrl('library', [], false), 301);
+    }
+    $type = $tab ? $tabs[$tab] : 0;
+    $sortKey = input('sort');
+    $sort = isset($sorts[$sortKey]) ? $sorts[$sortKey] : $this->libraryDefaultSort($type);
+
+    // Hand the component the values it expects.
+    request()->merge(['type' => (string) $type, 'Filter' => ['sort' => $sort], 'search' => (string) input('search', '')]);
+
+    // For the clean-URL navigation script.
+    $this['rl_library'] = [
+        'base' => $this->pageUrl('library', [], false),
+        'tabs' => array_flip($tabs),
+        'sorts' => array_flip($sorts),
+        'defaults' => ['1' => 'title asc', '4' => 'title asc', '6' => 'title asc'],
+    ];
+}
+?>
+==
+{% partial 'realise/page-hero' crumb='Resources' title='Library' %}
+
+{# Pensoft.Library's LibraryPage component, restyled by .rl-library in
+   assets/realise/css/realise.css; each record is the theme override
+   partials/librarypage/templates/template5.htm. #}
+<section class="rl-band" aria-labelledby="library-records">
+    <div class="rl-wrap rl-library" data-rl-library="{{ rl_library|json_encode }}">
+        <h2 class="sr-only" id="library-records">Library records</h2>
+        {% component 'LibraryPage' %}
+    </div>
+</section>

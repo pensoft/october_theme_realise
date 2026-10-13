@@ -1,0 +1,140 @@
+.gallery-title{
+    color: @dark-color;
+    font-size: 36px;
+}
+
+.gallery-item {
+    img{
+        max-width: 80% !important;
+        border-radius: 10px;
+        object-fit: contain;
+        width: auto;
+    }
+}
+
+/* Position the image container (needed to position the left and right arrows) */
+.gallery_container {
+    position: relative;
+}
+
+/* Hide the images by default */
+.mySlides {
+    display: none;
+    text-align: center;
+    img{
+        border-radius: 0!important;
+    }
+}
+
+.img-fluid {
+    height: 400px !important;
+    .breakpoint-small-down({
+        height: 280px !important;
+    });
+}
+
+/* Add a pointer when hovering over the thumbnail images */
+.cursor {
+    cursor: pointer;
+}
+
+/* Next & previous buttons */
+.prev,
+.next {
+    cursor: pointer;
+    position: absolute;
+    top: 180px;
+    width: 69px;
+    height: 69px;
+    background-color: transparent;
+    border-radius: 50%;
+    user-select: none;
+    -webkit-user-select: none;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    .breakpoint-small-down({
+        top: 120px;
+        width: 48px;
+        height: 48px;
+     });
+}
+
+.next {
+    right: 10px;
+    background-image: url('../../assets/images/next-gallery.svg');
+    .breakpoint-small-down({
+        right: -15px;
+     });
+}
+
+.prev {
+    left: 10px;
+    background-image: url('../../assets/images/back-gallery.svg');
+    .breakpoint-small-down({
+        left: -15px;
+     });
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover,
+.next:hover {
+    opacity: 0.65
+}
+
+/* Number text (1/3 etc) */
+.numbertext {
+    color: #f2f2f2;
+    font-size: 12px;
+    padding: 8px 12px;
+    position: absolute;
+    top: 0;
+}
+
+/* Container for image text */
+.caption-container {
+    text-align: center;
+    // background-color: #222;
+    padding: 0px 16px;
+    color: white;
+    #caption{
+        margin-bottom: 0!important;
+    }
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Six columns side by side */
+.column {
+    // float: right;
+    width: 120px;
+    padding-bottom: 16px;
+    .breakpoint-small-down({
+        width: 76px;
+    });
+    img{
+        border-radius: 0!important;
+        height: 96px;
+        .breakpoint-small-down({
+            height: 69px;
+        });
+    }
+}
+
+/* Add a transparency effect for thumnbail images */
+.demo {
+    opacity: 0.6;
+}
+
+.active,
+.demo:hover {
+    opacity: 1;
+}
+
+.download-gallery{
+    padding-bottom: 24px;
+}

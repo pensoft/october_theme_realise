@@ -1,0 +1,20 @@
+url = "/work-packages"
+layout = "default"
+title = "Work packages"
+is_hidden = 0
+robot_index = "noindex"
+robot_follow = "follow"
+==
+<?php
+/*
+ * The work packages live on the About page (section #work-packages, from
+ * Pensoft.Accordions). This old standalone page used the previous theme's
+ * accordion markup; it now redirects there so there is one place to read
+ * and maintain them.
+ */
+function onStart()
+{
+    return Redirect::to($this->pageUrl('about', [], false) . '#work-packages', 301);
+}
+?>
+==

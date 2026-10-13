@@ -1,0 +1,141 @@
+description = "Default layout"
+
+[SeoCmsPage]
+
+[session]
+security = "all"
+
+[metaList]
+includePageMeta = 1
+escape = 1
+==
+{#
+    REALISE layout - implements REALISEWebsite.html.
+
+    Pages in rl_designed render their own hero and sections. Every other page
+    (privacy, cookies, search, login, static pages...) gets the inner-page
+    hero with its title, and its content inside .rl-legacy, which re-colours
+    plugin/jumbotron markup for the navy background.
+
+    Styles: theme.less is still loaded for the grid/utility classes plugin
+    markup relies on; assets/realise/css/realise.css comes after it and owns
+    the look. Behaviour: assets/realise/js/realise.js.
+#}
+{% set rl_designed = ['home', 'about', 'partners', 'news', 'events', 'library', 'contact', 'media-center', 'newsletter', 'search'] %}
+{% set rl_is_designed = this.page.id in rl_designed %}
+<!DOCTYPE html>
+<html lang="{{ currentLang|default('en') }}">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% component 'SeoCmsPage' %}
+    {# Favicon set generated from the "R" symbol of the REALISE logo
+       (assets/realise/favicon). The theme's "Site icon" setting is no longer
+       read: the file uploaded there is the full wide logo, which is
+       illegible at tab size. #}
+    <link rel="icon" href="{{ 'assets/realise/favicon/favicon.ico'|theme }}" sizes="16x16 32x32 48x48">
+    <link rel="icon" type="image/svg+xml" href="{{ 'assets/realise/favicon/favicon.svg'|theme }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ 'assets/realise/favicon/favicon-32.png'|theme }}">
+    <link rel="apple-touch-icon" href="{{ 'assets/realise/favicon/apple-touch-icon.png'|theme }}">
+    <link rel="manifest" href="{{ 'assets/realise/favicon/site.webmanifest'|theme }}">
+    <meta name="theme-color" content="#04044D">
+
+    <link rel="preload" href="{{ 'assets/realise/fonts/jakarta-latin.woff2'|theme }}" as="font" type="font/woff2" crossorigin>
+    <link href="{{ ['assets/less/theme.less']|theme }}" rel="stylesheet">
+    <link href="{{ 'assets/realise/css/realise.css'|theme }}" rel="stylesheet">
+    <script>document.documentElement.className += ' rl-js';</script>
+
+    <script src="{{ 'assets/js/jquery.js'|theme }}"></script>
+    <script src="{{ 'assets/js/app.js'|theme }}"></script>
+    <script src="{{ 'assets/js/accessibility.js'|theme }}"></script>
+    <script src="{{ 'assets/vendor/bootstrap/js/modal.js'|theme }}"></script>
+    <script src="{{ 'assets/js/slick.min.js'|theme }}"></script>
+    <script src="{{ 'assets/realise/js/realise.js'|theme }}" defer></script>
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PWW5NKQ');</script>
+<!-- End Google Tag Manager -->
+
+    {% if (this.page.id == 'news' or this.page.id == 'blog') and is_detail_page %}
+        {% component 'metaList' includePageMeta=false %}
+    {% else %}
+        {% component 'metaList' %}
+    {% endif %}
+
+    {% framework extras %}
+    {% styles %}
+    {% scripts %}
+    <!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  /* .eps and .svg are not in Matomo's default download extension list */
+  _paq.push(['addDownloadExtensions', 'eps|svg']);
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//matomo.pensoft.net/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '81']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+</head>
+
+<body class="rl rl-page-{{ this.page.id }}" data-current-lang="{{ currentLang }}">
+<a class="skip-link" href="#layout-content">Skip to main content</a>
+
+<!-- Polite live region used to announce filter, pagination and toast updates -->
+<div id="a11y-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe title="Google Tag Manager" src="https://www.googletagmanager.com/ns.html?id=GTM-PWW5NKQ"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<div class="rl-site">
+    {% partial 'site/header'
+        site_name=this.theme.site_name
+        page_id=this.page.id
+    %}
+
+    <main id="layout-content" class="rl-main {{ this.page.id }}" tabindex="-1">
+        {% if rl_is_designed %}
+            {% page %}
+        {% else %}
+            {# These pages print their own <h1>; the banner title then renders
+               as a visually identical non-heading so each page has one H1. #}
+            {% set rl_own_h1 = this.page.id in ['404', 'error'] %}
+            {% partial 'realise/page-hero' title=(this.page.title ?: this.theme.site_name) heading=(not rl_own_h1) %}
+            <div class="rl-band">
+                <div class="rl-wrap rl-legacy">
+                    {% page %}
+                </div>
+            </div>
+        {% endif %}
+    </main>
+
+    {% if this.theme.enable_footer %}
+    <footer class="rl-footer">
+        {% partial 'site/footer'
+            footer_funds_flag=(this.theme.footer_funds_flag ? this.theme.footer_funds_flag.getPath() : null)
+        %}
+    </footer>
+    {% endif %}
+</div>
+
+<div id="gdpr-reload">
+    {% partial 'gdpr' %}
+</div>
+
+</body>
+</html>

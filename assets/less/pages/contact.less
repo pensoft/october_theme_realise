@@ -1,0 +1,349 @@
+.contact{
+    .width100{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.profile-item{
+    width: 100%;
+    .contact_info {
+        margin-bottom: 22px;
+        //width: 345px;
+        max-width: 100%;
+        text-align: center;
+        justify-content: center;
+
+
+        .coordinator_info{
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+            width: 100%;
+            color: white;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 300;
+            line-height: 120%; /* 16.8px */
+            letter-spacing: -0.42px;
+            text-align: left;
+
+            h3{
+                color: white;
+                font-family: Manrope;
+                font-size: 18px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: normal;
+                letter-spacing: -0.36px;
+                margin-bottom: 6px;
+                text-align: left;
+            }
+            .btn{
+                width: fit-content;
+                padding: 6px 10px;
+                margin-top: 11px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                //background: @link-color;
+                border: 1px solid #BDCCDA;
+                //border-radius: 10px;
+                color: white;
+                font-weight: 300;
+                flex-shrink: 0;
+                //color: #FFF;
+                text-align: center;
+                font-size: 16px;
+                font-style: normal;
+                //font-weight: 500;
+                line-height: normal;
+                letter-spacing: -0.48px;
+                border-radius: 10px;
+                //border: 1px solid #BDCCDA;
+                background: rgba(255, 255, 255, 0.04);
+                backdrop-filter: blur(13.05000019px);
+                //margin-top: 30px;
+
+                &:hover{
+                    background: @secondary-btn-color;
+                    border: 1px solid @secondary-btn-color;
+                }
+                i{
+                    background: url("../../assets/images/email-icon.svg") no-repeat;
+                    width: 20px;
+                    height: 18px;
+                    margin-top: 5px;
+                    margin-right: 5px;
+                }
+            }
+        }
+
+        .breakpoint-large-down({
+            width: 100%;
+        });
+    }
+
+    &:last-of-type{
+        .contact_info {
+            margin-bottom: 0px;
+        }
+    }
+}
+
+
+.get-involved{
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: max-content;
+
+    .breakpoint-large-down({
+        position: absolute;
+        width: 95%;
+        top: 90vh;
+    });
+
+    .contact_page_info{
+        border-left: 1px solid rgba(255, 255, 255, 0.25);
+        padding-left: 22px;
+    }
+
+    .hero{
+        justify-content: space-between;
+        display: flex;
+        flex-direction: column;
+
+    }
+
+        h1{
+            color: #FFF;
+            font-family: Manrope;
+            font-size: 60px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: 110%; /* 66px */
+            text-align: left;
+            padding-right: 15%;
+
+            .breakpoint-large-down({
+                font-size: 40px;
+                padding-right: unset;
+            });
+        }
+
+        .contact_form_container{
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(2px);
+            max-width: 100%;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 4px;
+            z-index: 3;
+            position: relative;
+
+
+            .contact_form_content{
+                border-radius: 6px;
+                background: white;
+                display: flex;
+                flex-direction: column;
+                padding: 22px;
+                max-width: calc(~'100% - 44px');
+                height: calc(~'100vh - 320px');
+                overflow-y: auto;
+
+                .breakpoint-laptop-down({
+                    max-height: 75vh;
+                    height: 100%;
+                });
+
+                .breakpoint-huge-down({
+                    max-width: calc(~'100% - 24px');
+                    height: calc(~'100vh - 220px');
+                    padding: 12px;
+                    max-height: unset;
+                });
+
+
+
+                .row{
+                    width: 100%;
+                }
+                h3{
+                    color: #2F2F2F;
+                    text-align: center;
+                    font-size: 40px;
+                    font-style: normal;
+                    font-weight: 400;
+                    line-height: normal;
+                    letter-spacing: -1.6px;
+                }
+
+                .btn-primary{
+                    margin: 0 auto;
+                    width: 100%;
+                    background: @link-color;
+                    color: white;
+                    border: 1px solid @link-color;
+                    &:hover{
+                        background: @secondary-btn-color;
+                        border: 1px solid @secondary-btn-color;
+                    }
+                }
+
+                form{
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    .row{
+                        height: 100%;
+                    }
+                }
+
+
+
+                /* **** */
+                .field input[type="text"], .field input[type="password"], .field input[type="email"], .field select, .field textarea{
+                    background: white!important;
+                    box-shadow: none!important;
+                    color: #778599 !important;
+                    font-weight: 100;
+                    font-size: 13px;
+                    border-radius: 10px!important;
+                    border: 1px solid #D2D5DA;
+                    display: flex;
+                    padding: 6px 8px;
+                    align-items: center;
+                    flex-shrink: 0;
+                    height: 43px;
+
+
+
+                    &::placeholder {
+                        font-weight: 100;
+                        opacity: 0.5;
+                        font-size: 0.9em;
+                    }
+                    &:focus{
+                        outline: none;
+                        border: 1px solid #06223C;
+                        color: #06223C!important;
+                    }
+
+                    &:invalid {
+                        border-color: red;
+                    }
+
+                    &.red_err_field{
+                        border-radius: 10px;
+                        border: 1px solid #E30000;
+                        background: #f3d9df!important;
+                        color: #E30000!important;
+                        font-size: 14px;
+                        font-style: normal;
+                        font-weight: 400;
+                        line-height: 140%; /* 19.6px */
+                        letter-spacing: -0.28px;
+                    }
+                }
+
+                .field textarea{
+                    min-height: 102px;
+                }
+
+
+                button {
+                    font-size: 15px!important;
+                }
+
+                .ui.form .field{
+                    margin-top: 10px!important;
+                    .breakpoint-huge-down({
+                        margin-top: 5px!important;
+                    });
+
+
+                    .g-recaptcha{
+                        width: 100%;
+                        overflow-x: auto;
+                        overflow-y: hidden;
+                    }
+
+                    label{
+                        color: #3C3D3F;
+                        font-family: Geist;
+                        font-size: 12px;
+                        font-style: normal;
+                        font-weight: 500;
+                        line-height: 20px; /* 166.667% */
+                        letter-spacing: -0.24px;
+                        margin-left: 0;
+                        text-align: left;
+                        .breakpoint-huge-down({
+                            margin: 0;
+                        });
+                    }
+
+                    /* checkbox */
+                    input[type="checkbox"] {
+                        /* Add if not using autoprefixer */
+                        -webkit-appearance: none;
+                        /* Remove most all native input styles */
+                        appearance: none;
+                        /* For iOS < 15 */
+                        background-color: white;
+                        /* Not removed via appearance */
+                        font: inherit;
+                        color: #e7e6e7;
+                        border-radius: 4px;
+                        border: 1px solid #B3B5B5;
+                        width: 17px;
+                        height: 17px;
+                        transform: translateY(-0.075em);
+
+                        display: grid;
+                        place-content: center;
+                        float: left;
+                        margin: 2px 7px 14px 0;
+                    }
+
+                    input[type="checkbox"]::before {
+                        content: "";
+                        width: 0.9em;
+                        height: 0.9em;
+                        clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+                        transform: scale(0);
+                        transform-origin: bottom left;
+                        transition: 120ms transform ease-in-out;
+                        box-shadow: inset 1em 1em @yellow-color;
+                        /* Windows High Contrast Mode */
+                        background-color: @yellow-color;
+                    }
+
+                    input[type="checkbox"]:checked::before {
+                        transform: scale(1);
+                    }
+
+
+
+                }
+
+                .ui.form{
+                    .field + .field {
+                        margin-top: 0;
+                    }
+                }
+                /* *** */
+            }
+        }
+}
+
+

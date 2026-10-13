@@ -1,0 +1,83 @@
+url = "/media-center/press-releases"
+layout = "default"
+title = "Press releases"
+is_hidden = 0
+robot_index = "index"
+robot_follow = "follow"
+
+[builderList mediaPressReleasesList]
+modelClass = "pensoft\Media\Models\Pressreleases"
+scope = "-"
+scopeValue = "{{ :scope }}"
+displayColumn = "name"
+noRecordsMessage = "No records found"
+detailsPage = "-"
+detailsUrlParameter = "id"
+pageNumber = "{{ :page }}"
+
+[siteSearchInclude]
+
+[jumbotron]
+jumbotron = "under-construction"
+title = 1
+background = "transperant"
+templates = "template1"
+description_limit = 0
+==
+<?php
+use Pensoft\Media\Models\Pressreleases;
+
+function onStart(){
+	$this['mediaPressreleasesList'] =  Pressreleases::orderBy('date', 'desc')->get();
+}
+?>
+==
+{% component 'siteSearchInclude' %}
+{% set records = mediaPressreleasesList %}
+
+<div class="container">
+    <!--<div class="col-xs-12 go-back">-->
+    <!--    <a href="{{'media-center'|page}}"  class="col-xs-12 back-to-news">Back to Media Center</a>-->
+    <!--</div>-->
+
+    {% if records.count %}
+    {# Keeps the heading order h1 (hero) -> h2 -> h3 (card titles). #}
+    <h2 class="visually-hidden">Press releases</h2>
+    <div class="row library-items">
+
+
+        {% for record in records %}
+        {# Use spaceless tag to remove spaces inside the A tag. #}
+        {% spaceless %}
+        <div class="col-md-4 col-xs-12">
+            <div class="library-item aos-init aos-animate" data-aos="fade-up">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <span class="doc_year">{{record.date |date('d F Y')}}</span>
+                        <h3 class="card-title">{{record.name}}</h3>
+                        <div class="body">
+                            {{record.description | raw}}
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12">
+                        {% for link in record.link %}
+                        <a target="_blank" rel="noopener noreferrer" href="{{link.url}}" class="btn btn-primary no-margin">{{link.text}}{% partial 'components/new-tab-hint' %}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        {% endspaceless %}
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+    <div class="no-records">Items will follow soon. Keep posted!</div>
+    {% endif %}
+</div>
+

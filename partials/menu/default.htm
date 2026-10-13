@@ -1,0 +1,53 @@
+{#
+    Theme override of plugins/benfreke/menumanager/components/menu/default.htm
+    for the REALISE header (alias "menu" in partials/site/header.htm).
+
+    Items, order, labels and links are managed in the backend under
+    Menu Manager. Two levels are rendered: top-level items, and their
+    children as the hover/click dropdown.
+
+    A parent that links somewhere is rendered as that link plus a separate
+    caret button that opens the dropdown (touch and keyboard users can't
+    hover). A parent with no URL is rendered as the button alone.
+
+    "active" comes from the plugin: an item is active when its page (or one
+    of its children's) is the current page.
+#}
+{% if parentNode and parentNode.getChildCount %}
+<ul class="rl-nav__list">
+    {% for item in parentNode.getChildren|filter(i => i.enabled) %}
+    {% set active = item.getListItemClasses(activeLeft, activeRight) == 'active' %}
+    {% set href = item.getLinkHref %}
+    {% set target = item.getLinkTarget %}
+    {% set children = numberOfLevels > 1 ? item.getChildren|filter(c => c.enabled) : [] %}
+
+    {% if children|length %}
+    <li class="rl-nav__item rl-nav__item--parent {{ active ? 'is-active' }}" data-rl-dropdown>
+        {% if href != '#' %}
+        <a class="rl-nav__link" href="{{ href }}" {% if target != '_self' %}target="{{ target }}" rel="noopener noreferrer"{% endif %}>{% partial 'realise/roll' text=item.title %}</a>
+        <button type="button" class="rl-nav__toggle" aria-expanded="false" aria-controls="rl-sub-{{ item.id }}" aria-label="{{ item.title }} submenu">{% partial 'realise/icon' name='caret' %}</button>
+        {% else %}
+        <button type="button" class="rl-nav__link" aria-expanded="false" aria-controls="rl-sub-{{ item.id }}">{% partial 'realise/roll' text=item.title %} {% partial 'realise/icon' name='caret' %}</button>
+        {% endif %}
+        <div class="rl-nav__sub" id="rl-sub-{{ item.id }}">
+            <ul class="rl-nav__sub-box">
+                {% for child in children %}
+                {# Menu Manager marks only the first item pointing at the current
+                   page - the parent when parent and child share it (About,
+                   News & Events) - so also match the child by its page. #}
+                {% set child_active = child.getListItemClasses(activeLeft, activeRight) == 'active'
+                    or (not child.is_external and child.url and child.url == this.page.baseFileName) %}
+                {% set child_target = child.getLinkTarget %}
+                <li><a href="{{ child.getLinkHref }}" class="{{ child_active ? 'is-active' }}" {% if child_active %}aria-current="page"{% endif %} {% if child_target != '_self' %}target="{{ child_target }}" rel="noopener noreferrer"{% endif %}>{% partial 'realise/roll' text=child.title %}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </li>
+    {% else %}
+    <li class="rl-nav__item">
+        <a class="rl-nav__link {{ active ? 'is-active' }}" href="{{ href }}" {% if active %}aria-current="page"{% endif %} {% if target != '_self' %}target="{{ target }}" rel="noopener noreferrer"{% endif %}>{% partial 'realise/roll' text=item.title %}</a>
+    </li>
+    {% endif %}
+    {% endfor %}
+</ul>
+{% endif %}

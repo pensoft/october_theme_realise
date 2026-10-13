@@ -1,0 +1,55 @@
+{#
+    Theme override of plugins/pensoft/library/components/librarypage/templates/template5.htm,
+    as a REALISE document card (.rl-doc).
+
+    The download href points at the "download" page so the URL carries the
+    publication's real file name (what Matomo reports) - kept from the
+    previous override.
+#}
+{#
+    Status is shown on deliverables only (record type 5). The backend's
+    Library status options map to the review status:
+      Published -> Approved, In Press / In Preparation -> Subject to change,
+      Other -> Not approved by REA.
+#}
+{% set status = null %}
+{% if record.type == 5 and record.status %}
+    {% set status = {1: 'Approved', 2: 'Subject to change', 3: 'Subject to change', 4: 'Not approved by REA'}[record.status] ?? null %}
+{% endif %}
+<article class="rl-doc">
+    <div class="rl-doc__top">
+        <span class="rl-doc__type">{{ record.type_attr|_ }}</span>
+        {% if record.year_attr %}<span class="rl-doc__year">{{ record.year_attr }}</span>{% endif %}
+    </div>
+    <h3>{{ record.title }}</h3>
+    <div class="rl-doc__fields">
+        {% partial __SELF__ ~ "::libraries-content" label="Authors:"|_ value=record.authors %}
+        {% partial __SELF__ ~ "::libraries-content" label="Journal:"|_ value=record.journal_title %}
+        {% partial __SELF__ ~ "::libraries-content" label="Proceedings:"|_ value=record.proceedings_title %}
+        {% partial __SELF__ ~ "::libraries-content" label="Monograph:"|_ value=record.monograph_title %}
+        {% partial __SELF__ ~ "::libraries-content" label="Deliverable title:"|_ value=record.deliverable_title %}
+        {% partial __SELF__ ~ "::libraries-content" label="Deliverable number:"|_ value=record.deliverable_number %}
+        {% partial __SELF__ ~ "::libraries-content" label="Milestone number:"|_ value=record.milestone_number %}
+        {% partial __SELF__ ~ "::libraries-content" label="Project:"|_ value=record.project_title %}
+        {% partial __SELF__ ~ "::libraries-content" label="Volume/Issue:"|_ value=record.volume_issue %}
+        {% partial __SELF__ ~ "::libraries-content" label="Publisher:"|_ value=record.publisher %}
+        {% partial __SELF__ ~ "::libraries-content" label="Place:"|_ value=record.place %}
+        {% partial __SELF__ ~ "::libraries-content" label="City:"|_ value=record.city %}
+        {% partial __SELF__ ~ "::libraries-content" label="Pages:"|_ value=record.pages %}
+    </div>
+    <div class="rl-doc__foot">
+        {% if status %}
+        <span class="rl-doc__status {{ status in ['Published', 'Approved', 'Submitted'] ? '' : 'rl-doc__status--pending' }}">{{ status|_ }}</span>
+        {% endif %}
+        {% if record.doi %}
+        <span class="rl-doc__link">URL/DOI: <a href="{{ record.doi }}" target="_blank" rel="noopener noreferrer">{{ record.doi }}{% partial 'components/new-tab-hint' %}</a></span>
+        {% endif %}
+        {% if record.file %}
+        {# /download/<id>/<original file name>; PDFs open in a new tab, other files download. #}
+        <a class="rl-btn rl-btn--sm" {% partial 'realise/file-link' file=record.file %}>
+            {% partial 'realise/roll' text=('Download'|_) %}<span class="sr-only"> {{ record.title }} ({{ (record.file.file_size / 1024 / 1024)|round(2) }} MB{{ record.file.getExtension()|lower in ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'] ? ', opens in a new tab' }})</span>
+            <span class="rl-btn__sq">{% partial 'realise/icon' name='download' %}</span>
+        </a>
+        {% endif %}
+    </div>
+</article>

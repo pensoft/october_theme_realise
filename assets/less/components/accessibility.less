@@ -1,0 +1,287 @@
+/**
+ * Accessibility helpers.
+ *
+ * Everything in here exists to satisfy the QA accessibility checklist:
+ * a real skip link, a focus indicator that survives the theme's
+ * "outline: none" resets, and the screen-reader-only helpers.
+ */
+
+/* ---------------------------------------------------------------------------
+ * Skip link - first focusable element on the page.
+ * ------------------------------------------------------------------------ */
+.skip-link {
+    // fixed, not absolute: the link must stay reachable and visible even if
+    // the page is restored at a scroll offset.
+    position: fixed;
+    top: -100px;
+    left: 16px;
+    z-index: 100000;
+    display: inline-block;
+    padding: 12px 20px;
+    background: #ffffff;
+    color: #0d4c8b !important;
+    font-weight: 700;
+    text-decoration: underline;
+    border: 3px solid #0d4c8b;
+    border-radius: 0 0 6px 6px;
+    transition: none;
+
+    &:focus,
+    &:focus-visible {
+        top: 0;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Focus indicator.
+ *
+ * The theme used to reset "outline: none" on a, button and .btn. Those resets
+ * are gone, and this two-tone ring guarantees a visible indicator on both the
+ * light page background and the dark navbar / footer.
+ * ------------------------------------------------------------------------ */
+// !important is deliberate: several component stylesheets still set
+// "outline: none" (some of them with !important) on inputs, selects, slick
+// controls and .btn:focus. The keyboard focus indicator must win over all of
+// them, and it only applies to :focus-visible, so pointer clicks are unchanged.
+.focus-ring() {
+    outline: 3px solid #ffffff !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 6px #0d4c8b !important;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+[contenteditable="true"]:focus-visible {
+    .focus-ring();
+}
+
+/* Browsers without :focus-visible support fall back to :focus. */
+.no-focus-visible {
+    a:focus,
+    button:focus,
+    input:focus,
+    select:focus,
+    textarea:focus,
+    [tabindex]:focus,
+    [role="button"]:focus,
+    [role="tab"]:focus {
+        .focus-ring();
+    }
+}
+
+/* The mobile menu checkbox is visually replaced by the burger bars, so move the
+ * ring onto the bars the user actually sees. */
+#menuToggle input[type="checkbox"]:focus-visible ~ span {
+    .focus-ring();
+}
+
+/* ---------------------------------------------------------------------------
+ * Icon triggers that used to be anchors with an onclick handler are real
+ * buttons now. Strip the UA chrome so they keep their previous appearance.
+ * ------------------------------------------------------------------------ */
+.navbar {
+    .search-btn,
+    .mobile-search-btn,
+    .close-search {
+        appearance: none;
+        -webkit-appearance: none;
+        background: none;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+    }
+}
+
+.partners_list_content .read-more,
+.contact_info .read-more,
+.coordinator_info .read-more,
+.share-btn,
+.disclosure-toggle {
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------
+ * Keyboard-reachable navbar dropdowns.
+ *
+ * The submenu used to open on :hover only. The focus-within fallback and the
+ * JS-managed "is-open" state make it reachable with a keyboard.
+ * ------------------------------------------------------------------------ */
+.navbar .navbar-collapse .navbar-nav .nav-item.dropdown {
+    &:focus-within > .dropdown-menu,
+    &.is-open > .dropdown-menu {
+        display: block;
+        opacity: 1;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Locale picker - rendered as a custom listbox by app.js.
+ * ------------------------------------------------------------------------ */
+.custom-select__trigger:focus-visible,
+.custom-select__option:focus-visible {
+    .focus-ring();
+}
+
+.custom-select__option[aria-selected="true"] {
+    font-weight: 700;
+}
+
+/* ---------------------------------------------------------------------------
+ * Form validation feedback.
+ * ------------------------------------------------------------------------ */
+.form-error-summary {
+    display: none;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 2px solid #b3261e;
+    border-radius: 4px;
+    background: #fdeceb;
+    color: #7a1a14;
+
+    &.is-visible {
+        display: block;
+    }
+
+    p {
+        margin: 0 0 8px;
+        font-weight: 700;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+}
+
+.field-required-marker {
+    color: #b3261e;
+}
+
+/* Grouping a radio set needs a fieldset; strip its default chrome. */
+fieldset.interest-fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+
+    legend {
+        padding: 0;
+        margin-bottom: 8px;
+    }
+}
+
+/* Controls that used to be href="javascript:;" anchors. */
+.link-button {
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: @link-color;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* A field flagged by the server keeps a shape cue, not only a colour one. */
+.red_err_field,
+[aria-invalid="true"] {
+    border: 2px solid #b3261e !important;
+    background-image: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Session timeout warning dialog.
+ * ------------------------------------------------------------------------ */
+.session-timeout {
+    position: fixed;
+    inset: 0;
+    z-index: 100001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(5, 18, 31, 0.65);
+
+    &[hidden] {
+        display: none;
+    }
+
+    &__dialog {
+        width: 100%;
+        max-width: 460px;
+        padding: 28px;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #0a3951;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    h2 {
+        margin-top: 0;
+        font-size: 22px;
+    }
+
+    &__countdown {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 20px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Auto-playing carousels need a keyboard-reachable stop control.
+ * ------------------------------------------------------------------------ */
+.carousel-playback-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0;
+    padding: 6px 14px;
+    border: 2px solid currentColor;
+    border-radius: 20px;
+    background: transparent;
+    color: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion - the theme animates headings word by word on load.
+ * ------------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}

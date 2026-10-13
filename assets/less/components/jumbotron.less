@@ -1,0 +1,155 @@
+.vision, .mission{
+    color: @heading-text-color;
+    font-size: 35px;
+    font-style: normal;
+    font-weight: 106;
+    line-height: 120%; /* 42px */
+    letter-spacing: -1.4px;
+
+    .container{
+        padding: 0;
+        margin-bottom: 20px;
+        font-weight: 300;
+    }
+    img{
+        width: 510px;
+        max-width: 100%;
+        height: 565px;
+        object-fit: cover;
+        border-radius: 27px;
+
+        .breakpoint-large-down({
+            height: auto;
+            width: 100%;
+        });
+    }
+
+    .col-md-6{
+        padding: 0;
+    }
+}
+
+.mission{
+    .col-md-7{
+        padding-left: 73px;
+        .breakpoint-large-down({
+            padding-left: 0;
+        });
+    }
+}
+
+.vision{
+    .col-md-7{
+        padding-right: 73px;
+        .breakpoint-large-down({
+            padding-right: 0;
+        });
+    }
+}
+
+.about_intro{
+    padding-bottom: 0;
+
+    .container{
+        padding-right: 72px;
+        .breakpoint-large-down({
+            padding-right: 0;
+        });
+    }
+    .breakpoint-large-down({
+        padding: 0;
+    });
+    p{
+        font-weight: 300;
+    }
+}
+
+.objectives{
+
+    .rowspan2{
+        height: 100%;
+    }
+
+    .col-xs-12{
+        padding: 0;
+    }
+    .objective_item{
+        border-radius: 10px;
+        border: 1px solid #CED3DB;
+        padding: 110px 28px 34px 28px;
+        width: calc(~'100% - 71px');
+        height: calc(~'100% - 130px');
+        display: flex;
+        align-items: end;
+
+
+        .breakpoint-large-down({
+            height: fit-content;
+            margin-bottom: 20px;
+        });
+
+        h2{
+            font-size: 24px;
+            line-height: 120%; /* 28.8px */
+            letter-spacing: -0.96px;
+            margin-bottom: 0;
+        }
+
+        &.obj1{
+            background: url("../../assets/images/objective1.svg") no-repeat;
+            background-size: 47px;
+            background-position: 28px 19px;
+        }
+        &.obj2{
+            background: url("../../assets/images/objective2.svg") no-repeat;
+            background-size: 47px;
+            background-position: 28px 19px;
+        }
+        &.obj3{
+            background: url("../../assets/images/objective3.svg") no-repeat;
+            background-size: 47px;
+            background-position: 28px 19px;
+        }
+        &.obj4{
+            background: url("../../assets/images/objective4.svg") no-repeat;
+            background-size: 47px;
+            background-position: 28px 19px;
+        }
+        &.obj5{
+            background: url("../../assets/images/objective5.svg") no-repeat;
+            background-size: 47px;
+            background-position: 28px 19px;
+        }
+    }
+
+    .row + .row {
+        .breakpoint-large-down({
+            margin-top: 0;
+        });
+    }
+}
+
+.about_bottom_section{
+    background: url("../../assets/images/background-about.png") center no-repeat;
+    background-size: cover;
+    object-position: bottom;
+    .container{
+        padding: 151px 0;
+        .animated_paragraph{
+            width: 57%;
+            color: #FFF;
+            text-align: center;
+            font-size: 35px;
+            font-style: normal;
+            font-weight: 300;
+            line-height: 120%; /* 42px */
+            letter-spacing: -1.4px;
+            margin: 0 auto;
+
+
+            .breakpoint-large-down({
+                width: 100%;
+            });
+        }
+    }
+}
