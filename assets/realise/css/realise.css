@@ -549,7 +549,7 @@ body.rl .rl-partner__logo img { max-height: 64px; max-width: min(195px, 100%); w
 .rl-article__cover figcaption { margin-top: 10px; font-size: 13px; color: var(--rl-text-80); }
 .rl-article__body { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 20px; }
 .rl-article__date { font-size: 15px; font-weight: 500; color: var(--rl-blue); letter-spacing: 0; }
-.rl .rl-article__title { margin: 0 0 12px; font-size: clamp(28px, 3.4vw, 44px); letter-spacing: -0.045em; line-height: 1.08; text-wrap: balance; }
+.rl .rl-article__title { margin: 0 0 12px; font-size: clamp(28px, 3.4vw, 44px); letter-spacing: 0; word-spacing: 0.1em; line-height: 1.08; text-wrap: balance; }
 .rl-prose { font-size: 18px; line-height: 1.65; color: rgba(218, 231, 255, 0.9); }
 .rl-prose > * + * { margin-top: 20px; }
 .rl-prose p { text-wrap: pretty; }

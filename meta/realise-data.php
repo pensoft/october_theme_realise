@@ -78,7 +78,7 @@ return [
     // bring them back - content stays in Pensoft.Media meanwhile.
     'media_sections' => [
         'newsletters' => false,
-        'press' => false,
+        'press' => true,
     ],
     'partners' => $partners,
     'countries' => $countries,

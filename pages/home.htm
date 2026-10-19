@@ -83,8 +83,14 @@ function partnerCountries($data)
                     'orgs' => [],
                 ];
             }
-            $org = ['name' => $p->instituion ?: $p->title, 'short' => $p->title ?: $p->instituion, 'url' => $orgUrl];
-            $role = trim(strip_tags($p->add_description));
+            // Fields come from rich-text editors: drop tags, decode entities
+            // (&nbsp; etc.) and turn non-breaking spaces into plain ones.
+            $plain = function ($s) {
+                $s = html_entity_decode(strip_tags((string) $s), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                return trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $s));
+            };
+            $org = ['name' => $plain($p->instituion ?: $p->title), 'short' => $plain($p->title ?: $p->instituion), 'url' => $orgUrl];
+            $role = $plain($p->add_description);
             if ($role) {
                 $org['role'] = $role === 'Project coordinator' ? 'Coordinator' : $role;
             }
