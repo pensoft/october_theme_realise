@@ -1,6 +1,7 @@
 url = "/events/:slug?/:category?"
 layout = "default"
 title = "Events"
+meta_description = "Upcoming and past REALISE events, workshops and meetings on research assessment reform."
 is_hidden = 0
 robot_index = "index"
 robot_follow = "follow"
@@ -72,7 +73,9 @@ function onStart()
         $this['entry'] = $entry;
 
         if ($entry && class_exists('\BennoThommo\Meta\Meta')) {
-            $desc = str_limit(Html::strip($entry->description), 255);
+            // Plain text: entities such as &nbsp; decoded, line breaks collapsed.
+            $desc = str_limit(trim(preg_replace('/\s+/u', ' ', html_entity_decode(Html::strip($entry->description), ENT_QUOTES | ENT_HTML5, 'UTF-8'))), 255);
+            \BennoThommo\Meta\Meta::set('description', $desc);
             \BennoThommo\Meta\Meta::set('twitter:card', 'summary_large_image');
             \BennoThommo\Meta\Meta::set('twitter:title', $entry->title);
             \BennoThommo\Meta\Meta::set('twitter:description', $desc);

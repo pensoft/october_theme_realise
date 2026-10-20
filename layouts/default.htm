@@ -6,8 +6,16 @@ description = "Default layout"
 security = "all"
 
 [metaList]
-includePageMeta = 1
+includePageMeta = 0
 escape = 1
+==
+<?php
+function onStart()
+{
+    // Canonical / og:url: the current path on the production host, no query string.
+    $this['rl_canonical'] = Request::url();
+}
+?>
 ==
 {#
     REALISE layout - implements REALISEWebsite.html.
@@ -63,10 +71,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PWW5NKQ');</script>
 <!-- End Google Tag Manager -->
 
-    {% if (this.page.id == 'news' or this.page.id == 'blog') and is_detail_page %}
-        {% component 'metaList' includePageMeta=false %}
-    {% else %}
-        {% component 'metaList' %}
+    {# SeoCmsPage prints the page's meta description; metaList only adds what
+       pages set through BennoThommo\Meta (news/event detail description and
+       share tags). With includePageMeta on, it printed the description a
+       second time, or an empty one. #}
+    {% component 'metaList' %}
+
+    <link rel="canonical" href="{{ rl_canonical }}">
+    {# Default share tags. News and event detail pages set their own
+       (article title, text and cover) through metaList above. #}
+    {% if not (is_detail_page or entry) %}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="REALISE">
+    <meta property="og:title" content="{{ this.page.title ?: 'REALISE' }}">
+    {% if this.page.meta_description %}<meta property="og:description" content="{{ this.page.meta_description }}">{% endif %}
+    <meta property="og:url" content="{{ rl_canonical }}">
+    <meta property="og:image" content="{{ 'assets/realise/img/realise-logo.png'|theme }}">
+    <meta name="twitter:card" content="summary">
     {% endif %}
 
     {% framework extras %}
@@ -78,8 +99,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
   /* .eps and .svg are not in Matomo's default download extension list */
   _paq.push(['addDownloadExtensions', 'eps|svg']);
+  /* No cookies: the site has no consent banner with Accept/Reject */
+  _paq.push(['disableCookies']);
   _paq.push(['trackPageView']);
   _paq.push(['enableLinkTracking']);
+  /* File buttons (partials/realise/file-link.htm) carry data-rl-file="preview"
+     or "download"; record which one was used, under the file's name */
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[data-rl-file]');
+    if (!a) return;
+    var name = decodeURIComponent(a.pathname.split('/').pop());
+    _paq.push(['trackEvent', 'Files', a.getAttribute('data-rl-file') === 'preview' ? 'Preview' : 'Download', name]);
+  }, true);
   (function() {
     var u="//matomo.pensoft.net/";
     _paq.push(['setTrackerUrl', u+'matomo.php']);

@@ -45,11 +45,20 @@
         <span class="rl-doc__link">URL/DOI: <a href="{{ record.doi }}" target="_blank" rel="noopener noreferrer">{{ record.doi }}{% partial 'components/new-tab-hint' %}</a></span>
         {% endif %}
         {% if record.file %}
-        {# /download/<id>/<original file name>; PDFs open in a new tab, other files download. #}
+        {# /files/<id>/<original file name>: PDFs and images get a Preview
+           (new tab) next to Download, which always saves the file. #}
+        <div class="rl-doc__btns">
+        {% if record.file.getExtension()|lower in ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'] %}
         <a class="rl-btn rl-btn--sm" {% partial 'realise/file-link' file=record.file %}>
-            {% partial 'realise/roll' text=('Download'|_) %}<span class="sr-only"> {{ record.title }} ({{ (record.file.file_size / 1024 / 1024)|round(2) }} MB{{ record.file.getExtension()|lower in ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'] ? ', opens in a new tab' }})</span>
+            {% partial 'realise/roll' text=('Preview'|_) %}<span class="sr-only"> {{ record.title }}, opens in a new tab</span>
+            <span class="rl-btn__sq">{% partial 'realise/icon' name='external' %}</span>
+        </a>
+        {% endif %}
+        <a class="rl-btn rl-btn--sm" {% partial 'realise/file-link' file=record.file download=true %}>
+            {% partial 'realise/roll' text=('Download'|_) %}<span class="sr-only"> {{ record.title }} ({{ (record.file.file_size / 1024 / 1024)|round(2) }} MB)</span>
             <span class="rl-btn__sq">{% partial 'realise/icon' name='download' %}</span>
         </a>
+        </div>
         {% endif %}
     </div>
 </article>

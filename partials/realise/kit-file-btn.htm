@@ -1,5 +1,6 @@
 {#
-    One Brand Kit download button: primary button in a .rl-kit__btns row.
+    Brand Kit file buttons in a .rl-kit__btns row: "Preview" (single PDF or
+    image file, opens in a new tab) followed by "Download".
 
     file   - System\Models\File
     name   - item name, for screen readers
@@ -7,17 +8,25 @@
     single - true when it is the item's only file: the visible label is then
              "Download" (the file type is still read out)
 
-    Screen readers hear e.g. "Download Primary logo, PNG" or, for a single
-    file, "Download Roll-up banner (PDF)".
+    Screen readers hear e.g. "Preview Roll-up banner (PDF), opens in a new
+    tab", "Download Roll-up banner (PDF)" or, for one of several files,
+    "Download Primary logo, PNG".
 #}
 {% set ext = file.getExtension()|lower %}
 {% set label = label|default(ext|upper) %}
+{# Preview only for an item's single file: two files already fill the row. #}
+{% if single and (ext in ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'] or file.content_type == 'application/pdf') %}
 <a class="rl-btn rl-btn--sm rl-btn--block" {% partial 'realise/file-link' file=file %}>
+    {% partial 'realise/roll' text='Preview' %}<span class="sr-only"> {{ name }} ({{ label }})</span>
+    {%- partial 'components/new-tab-hint' %}
+    <span class="rl-btn__sq">{% partial 'realise/icon' name='external' %}</span>
+</a>
+{% endif %}
+<a class="rl-btn rl-btn--sm rl-btn--block" {% partial 'realise/file-link' file=file download=true %}>
     {% if single %}
     {% partial 'realise/roll' text='Download' %}<span class="sr-only"> {{ name }} ({{ label }})</span>
     {%- else %}
     <span class="sr-only">Download {{ name }}, </span>{% partial 'realise/roll' text=label %}
     {%- endif %}
-    {%- if ext in ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'] %}{% partial 'components/new-tab-hint' %}{% endif %}
     <span class="rl-btn__sq">{% partial 'realise/icon' name='download' %}</span>
 </a>

@@ -2,8 +2,8 @@ title = "Trigger download"
 url = "/trigger-download"
 layout = "default"
 is_hidden = 0
-robot_index = "index"
-robot_follow = "follow"
+robot_index = "noindex"
+robot_follow = "nofollow"
 ==
 <?php
 
@@ -12,7 +12,12 @@ use System\Models\File;
 
 function onStart()
 {
-	$files = Session::get('files');
+	// Opened directly (no files queued in the session) this was a 500
+	// (count() of null) - send the visitor to the Library instead.
+	$files = Session::get('files') ?: [];
+	if(!count($files)){
+		return Redirect::to($this->pageUrl('library', [], false));
+	}
 	if(count($files)){
 		if(count($files) == 1){ // single file download
 			$fileId = $files[0]['id'];

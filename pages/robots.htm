@@ -1,0 +1,26 @@
+title = "robots.txt"
+url = "/robots.txt"
+is_hidden = 0
+==
+<?php
+/*
+ * /robots.txt. The sitemap itself comes from RainLab.Sitemap
+ * (backend: Settings > Sitemap), which serves /sitemap.xml.
+ */
+function onStart()
+{
+    $base = rtrim(Request::root(), '/');
+
+    $lines = [
+        'User-agent: *',
+        'Disallow: /login',
+        'Disallow: /search',
+        'Disallow: /trigger-download',
+        '',
+        'Sitemap: ' . $base . '/sitemap.xml',
+    ];
+
+    return Response::make(implode("\n", $lines) . "\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+}
+?>
+==

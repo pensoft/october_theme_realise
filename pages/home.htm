@@ -12,31 +12,31 @@ robot_follow = "follow"
 ; not add its textured .bg-secondary class.
 [jumbotron hero_lead]
 jumbotron = "home-hero-lead"
-background = "transperant"
+background = "transparent"
 templates = "template3"
 description_limit = 0
 
 [jumbotron approach_intro]
 jumbotron = "home-approach-intro"
-background = "transperant"
+background = "transparent"
 templates = "template3"
 description_limit = 0
 
 [jumbotron approach_consolidate]
 jumbotron = "home-approach-consolidate"
-background = "transperant"
+background = "transparent"
 templates = "template3"
 description_limit = 0
 
 [jumbotron approach_test]
 jumbotron = "home-approach-test"
-background = "transperant"
+background = "transparent"
 templates = "template3"
 description_limit = 0
 
 [jumbotron approach_support]
 jumbotron = "home-approach-support"
-background = "transperant"
+background = "transparent"
 templates = "template3"
 description_limit = 0
 ==
@@ -177,15 +177,16 @@ function onStart()
         </div>
         <div class="rl-approach">
             {# One card per Jumbotron entry: heading = entry title, icon =
-               entry image (the component's own copy of the image is hidden
-               by CSS), text = entry body via the component. #}
+               entry image, text = entry body. The body is printed here rather
+               than through the component, whose template adds a second copy
+               of the image with no alt attribute. #}
             {% for alias in ['approach_consolidate', 'approach_test', 'approach_support'] %}
             {% set entry = attribute(_context, alias) ? attribute(_context, alias).getJumbotron() : null %}
             {% if entry %}
             <div class="rl-approach__item">
                 {% if entry.image %}<img src="{{ entry.image.path }}" alt="" aria-hidden="true">{% endif %}
                 <h3 data-fade>{{ entry.title }}</h3>
-                <div class="rl-cms">{% component alias %}</div>
+                <div class="rl-cms">{{ entry.body|ensure_img_alt|raw }}</div>
             </div>
             {% endif %}
             {% endfor %}

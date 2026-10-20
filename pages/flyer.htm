@@ -2,99 +2,18 @@ url = "/media-center/promotional-materials"
 layout = "default"
 title = "Promotional materials"
 is_hidden = 0
-robot_index = "index"
+robot_index = "noindex"
 robot_follow = "follow"
-
-[builderList mediaFlyersList]
-modelClass = "pensoft\Media\Models\Flyers"
-scope = "-"
-scopeValue = "{{ :scope }}"
-displayColumn = "name"
-noRecordsMessage = "No records found"
-detailsPage = "-"
-detailsUrlParameter = "id"
-pageNumber = "{{ :page }}"
 ==
 <?php
-use Pensoft\Media\Models\Flyers;
-use System\Models\File;
-
-function onStart(){
-	$this['mediaFlyersList'] =  Flyers::get();
-	if(get('download')){
-		$file = File::find((int)get('download'));
-		$file_name = $file->getLocalPath();
-$recordName = get('file_name') ? get('file_name') : 'OBSGESSION_flyer';
-$ext= $file->getExtension();
-
-if (file_exists($file_name)) {
-header('Content-Description: File Transfer');
-header('Content-Type: application/octet-stream');
-header("Content-Type: application/force-download");
-header('Content-Disposition: attachment; filename='.$recordName .'.'. $ext);
-header('Content-Transfer-Encoding: binary');
-header('Expires: 0');
-header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-header('Pragma: public');
-header('Content-Length: ' . filesize($file_name));
-ob_clean();
-flush();
-readfile($file_name);
-exit();
-}
-return Redirect::to('/flyer');
-}
-
-}
-
-function onDownloadFile(){
-$file = File::find(post('id'));
-$pathToFile = $file->getLocalPath();
-$fileName = $file->file_name;
-$fileType = $file->content_type;
-$headers = [
-'HTTP/1.1 200 OK',
-'Pragma: public',
-'Content-Type: '.$fileType,
-'Content-Type: application/force-download'
-];
-
-return Response::download($pathToFile, $fileName, $headers);
+/*
+ * Print materials (flyers, roll-up, sticker) now live in the Media Centre (#media-brand). This old standalone page, from the
+ * site the theme was copied from, redirects there. It also had a
+ * ?download=<file id> handler that served any attachment, public or not.
+ */
+function onStart()
+{
+    return Redirect::to($this->pageUrl('media-center', [], false) . '#media-brand', 301);
 }
 ?>
 ==
-
-<div class="container">
-    {% set records = mediaFlyersList %}
-    {% set displayColumn = mediaFlyersList.displayColumn %}
-    {% set noRecordsMessage = mediaFlyersList.noRecordsMessage %}
-    {% set detailsPage = mediaFlyersList.detailsPage %}
-    {% set detailsKeyColumn = mediaFlyersList.detailsKeyColumn %}
-    {% set detailsUrlParameter = mediaFlyersList.detailsUrlParameter %}
-
-    {% if records.count() %}
-    <div class="row">
-<!--        <div class="col-md-12 col-xs-12 mb-2">-->
-<!--            <a href="/{{currentLang}}/media-center" class="go-back-link">Back</a>-->
-<!--        </div>-->
-        {% for record in records %}
-
-        <div class="col-md-4 col-xs-12 mb-4">
-            <div class="logo-item">
-                <div class="logo-container {{record.name|slug}} {{record.name}}">
-                    <img src="{{record.flyer_image | resize(343, 315, { mode: 'crop' })}}" title="{{record.name}}" alt="{{record.name}}">
-                </div>
-                <div class="record_name">{{record.name}}</div>
-                <div class="links">
-                    {% if record.file %}
-                    <a {% partial 'realise/file-link' file=record.file %} data-attach-loading class="btn btn-primary"><i aria-hidden="true"></i> Download<span class="sr-only"> {{record.name}}</span>{% partial 'components/new-tab-hint' %}</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% else %}
-        {{ noRecordsMessage }}
-        {% endfor %}
-    </div>
-    {% endif %}
-</div>

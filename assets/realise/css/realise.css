@@ -848,6 +848,7 @@ body.rl .rl-library #clearBtn:hover, body.rl .rl-library #clearBtn:focus-visible
 .rl-doc__status--pending::before { background: #F2B544; box-shadow: 0 0 0 3px rgba(242, 181, 68, 0.2); }
 .rl-doc__link { font-size: 13px; line-height: 1.4; color: var(--rl-text-80); word-break: break-all; letter-spacing: 0; }
 .rl-doc .rl-btn { align-self: flex-end; }
+.rl-doc__btns { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .rl-library .no-records { padding: 64px 28px; text-align: center; font-size: 17px; color: var(--rl-text-80); }
 .rl-library > .row.center-xs { padding: 24px 16px 0; margin: 0; }
 

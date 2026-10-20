@@ -39,8 +39,9 @@ function onStart()
 	// One canonical URL per file: a missing or outdated name segment
 	// redirects to the current original file name.
 	$canonical = str_replace(['/', '\\'], '-', trim((string) $file->file_name)) ?: ('file-' . $file->id);
+	$forceDownload = (bool) get('download');
 	if (rawurldecode((string) $this->param('name')) !== $canonical) {
-		return Redirect::to($this->pageUrl('download', ['id' => $file->id, 'name' => $canonical], false), 301);
+		return Redirect::to($this->pageUrl('download', ['id' => $file->id, 'name' => $canonical], false) . ($forceDownload ? '?download=1' : ''), 301);
 	}
 
 	$headers = [];
@@ -66,11 +67,12 @@ function onStart()
 	 * PDFs and raster images are shown in the browser as a preview (links to
 	 * them open in a new tab, see partials/realise/file-link.htm); every other
 	 * type is downloaded. SVG stays a download: shown inline on this origin it
-	 * could run script. In both cases the name the browser uses - tab title,
-	 * save dialog - is the original upload name.
+	 * could run script. ?download=1 (the "Download" buttons) always saves the
+	 * file. In both cases the name the browser uses - tab title, save
+	 * dialog - is the original upload name.
 	 */
 	$ext = strtolower($file->getExtension());
-	$preview = in_array($ext, ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'], true) || $file->getContentType() === 'application/pdf';
+	$preview = !$forceDownload && (in_array($ext, ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'], true) || $file->getContentType() === 'application/pdf');
 	$response->setContentDisposition($preview ? 'inline' : 'attachment', $fileName, $fallback);
 	$response->headers->set('X-Content-Type-Options', 'nosniff');
 

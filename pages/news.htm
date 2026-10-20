@@ -1,6 +1,7 @@
 url = "/news/:id?/:category?"
 layout = "default"
 title = "News"
+meta_description = "Latest news from the REALISE project on responsible and inclusive research assessment in Europe."
 is_hidden = 0
 robot_index = "index"
 robot_follow = "follow"
@@ -98,7 +99,8 @@ $this['allow_share'] = $this['article']['allow_share'] == 'yes' ? true : false;
 if($this['is_detail_page']){
 $seoTitle = $this['article']['title'];
 $seoKeywords = $this['article']['meta_keywords'] ?: $this['article']['keywords'];
-$seoDescription = str_limit(Html::strip($this['article']['content']), 255);
+// Plain text: entities such as &nbsp; decoded, line breaks collapsed.
+$seoDescription = str_limit(trim(preg_replace('/\s+/u', ' ', html_entity_decode(Html::strip($this['article']['content']), ENT_QUOTES | ENT_HTML5, 'UTF-8'))), 255);
 
 if (class_exists('\BennoThommo\Meta\Meta')) {
 if($seoTitle) {
@@ -118,9 +120,9 @@ $this['encoded_title'] = urlencode($this['article']['title']);
 $this['slug'] = $this['article']['slug'];
 \BennoThommo\Meta\Meta::set('twitter:card', 'summary_large_image');
 \BennoThommo\Meta\Meta::set('twitter:title', $this['article']['title']);
-\BennoThommo\Meta\Meta::set('twitter:description', str_limit(Html::strip($this['article']['content']), 255));
+\BennoThommo\Meta\Meta::set('twitter:description', $seoDescription);
 \BennoThommo\Meta\Meta::set('og:title', $this['article']['title']);
-\BennoThommo\Meta\Meta::set('og:description', str_limit(Html::strip($this['article']['content']), 255) );
+\BennoThommo\Meta\Meta::set('og:description', $seoDescription);
 \BennoThommo\Meta\Meta::set('og:type', 'article');
 \BennoThommo\Meta\Meta::set('og:url', $this->pageUrl(''));
 if($this['article']['cover']){

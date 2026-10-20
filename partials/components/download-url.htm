@@ -1,6 +1,6 @@
 {#
     URL for a file attachment, served by the "download" page
-    (pages/download.htm): /download/<file id>/<original file name>.
+    (pages/download.htm): /files/<file id>/<original file name>.
 
     The URL carries the file's ORIGINAL upload name (System\Models\File
     file_name), not the hashed disk name - readable for visitors and for
@@ -9,11 +9,16 @@
 
         <a href="{{ partial('components/download-url', { file: record.file }) }}">
 
+    download - true adds ?download=1: the file is then always saved, never
+               shown in the browser. Without it PDFs and images open as a
+               preview. The two URLs keep previews and downloads apart in
+               Matomo.
+
     For complete link attributes (href + new tab for PDFs) use
     partials/realise/file-link.htm instead.
 #}
 {%- if file -%}
     {# Slashes cannot travel in a URL segment; everything else is kept. #}
     {%- set fname = file.file_name|default('file-' ~ file.id)|replace({'/': '-', '\\': '-'})|trim -%}
-    {{- 'download'|page({ id: file.id, name: fname }, false) -}}
+    {{- 'download'|page({ id: file.id, name: fname }, false) -}}{{- download ? '?download=1' : '' -}}
 {%- endif -%}
